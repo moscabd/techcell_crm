@@ -507,6 +507,10 @@ function proxOS(){return 'OS-'+String(db.contador).padStart(4,'0')}
 function proxVenda(){return 'VC-'+String(db.contador).padStart(4,'0')}
 function addCliente(c){db.clientes.push(c);salvarDB()}
 function updCliente(id,c){const i=db.clientes.findIndex(x=>x.id===id);if(i>-1){db.clientes[i]=c;salvarDB()}}
+function addOrdem(o){db.ordens.push(o);db.contador++;salvarDB()}
+function updOrdem(id,o){const i=db.ordens.findIndex(x=>x.id===id);if(i>-1){db.ordens[i]=o;salvarDB()}}
+function addVendaCelular(v){db.vendasCelular.push(v);db.contador++;salvarDB()}
+function updVendaCelular(id,v){const i=db.vendasCelular.findIndex(x=>x.id===id);if(i>-1){db.vendasCelular[i]=v;salvarDB()}}
 async function delCliente(id){
   if(!confirm('Tem certeza que deseja excluir?'))return
   try{

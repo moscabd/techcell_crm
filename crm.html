@@ -487,6 +487,7 @@ async function salvarDB(){
       _supa.from('vendas_celular').upsert(db.vendasCelular, {onConflict: 'id'}),
       _supa.from('config').upsert({id: 1, contador: db.contador, prestador: db.prestador}, {onConflict: 'id'})
     ])
+    console.log('Salvo no Supabase com sucesso')
   }catch(e){
     console.log('Erro ao salvar:', e)
   }

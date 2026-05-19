@@ -493,6 +493,10 @@ async function salvarDB(){
   for(const k of Object.keys(db))localStorage.setItem('tc-'+k,JSON.stringify(db[k]))
 }
 
+function salvarDBLocal(){
+  for(const k of Object.keys(db))localStorage.setItem('tc-'+k,JSON.stringify(db[k]))
+}
+
 initAuth()
 
 function getClientes(){return db.clientes}
@@ -503,15 +507,21 @@ function proxOS(){return 'OS-'+String(db.contador).padStart(4,'0')}
 function proxVenda(){return 'VC-'+String(db.contador).padStart(4,'0')}
 function addCliente(c){db.clientes.push(c);salvarDB()}
 function updCliente(id,c){const i=db.clientes.findIndex(x=>x.id===id);if(i>-1){db.clientes[i]=c;salvarDB()}}
-function delCliente(id){db.clientes=db.clientes.filter(x=>x.id!==id);salvarDB()}
-function addOrdem(o){db.ordens.push(o);db.contador++;salvarDB()}
-function updOrdem(id,o){const i=db.ordens.findIndex(x=>x.id===id);if(i>-1){db.ordens[i]=o;salvarDB()}}
-function excluirOrdem(id){db.ordens=db.ordens.filter(x=>x.id!==id);salvarDB()}
-function addDespesa(d){db.despesas.push(d);salvarDB()}
-function delDespesa(id){db.despesas=db.despesas.filter(x=>x.id!==id);salvarDB()}
-function addVendaCelular(v){db.vendasCelular.push(v);db.contador++;salvarDB()}
-function updVendaCelular(id,v){const i=db.vendasCelular.findIndex(x=>x.id===id);if(i>-1){db.vendasCelular[i]=v;salvarDB()}}
-function delVendaCelular(id){db.vendasCelular=db.vendasCelular.filter(x=>x.id!==id);salvarDB()}
+function delCliente(id){
+  db.clientes=db.clientes.filter(x=>x.id!==id)
+  _supa.from('clientes').delete().eq('id', id).then(()=>{})
+  salvarDBLocal()
+}
+function delDespesa(id){
+  db.despesas=db.despesas.filter(x=>x.id!==id)
+  _supa.from('despesas').delete().eq('id', id).then(()=>{})
+  salvarDBLocal()
+}
+function delVendaCelular(id){
+  db.vendasCelular=db.vendasCelular.filter(x=>x.id!==id)
+  _supa.from('vendas_celular').delete().eq('id', id).then(()=>{})
+  salvarDBLocal()
+}
 
 function showSection(s){
   document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'))
@@ -654,7 +664,7 @@ function editarOrdem(id){
   abrirModalOS(o)
 }
 
-function excluirOrdem(id){if(!confirm('Excluir OS?'))return;db.ordens=db.ordens.filter(x=>x.id!==id);salvarDB();renderOrdens();msg('msg-os','Excluida!','success')}
+function excluirOrdem(id){if(!confirm('Excluir OS?'))return;db.ordens=db.ordens.filter(x=>x.id!==id);_supa.from('ordens').delete().eq('id', id).then(()=>{});salvarDBLocal();renderOrdens();msg('msg-os','Excluida!','success')}
 
 // VENDAS CELULAR
 function renderVendasCelular(){

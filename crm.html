@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>TechCELL CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080808;--surface:#101010;--surface-2:#181818;--border:#252525;--text:#f0f0f0;--text-muted:#888;--accent:#c8ff00;--accent-hover:#b3e600;--accent-dim:rgba(200,255,0,0.08);--blue:#0096ff;--blue-bright:#00d4ff;--blue-dim:rgba(0,150,255,0.08);--danger:#ff4444;--danger-bg:rgba(255,68,68,0.1);--warning:#ff9500;--warning-bg:rgba(255,149,0,0.1);--success:#00d974;--success-bg:rgba(0,217,116,0.1);--radius:12px;--radius-lg:16px;--transition:200ms ease;--font:'DM Sans',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--blue)}
+::selection{background:var(--accent);color:#000}
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;background:var(--surface);border-right:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;position:fixed;height:100vh;z-index:100;transition:transform var(--transition)}
+.logo{font-size:20px;font-weight:800;color:var(--text);margin-bottom:28px;display:flex;align-items:center;gap:10px;padding:0 6px}
+.logo-icon{width:40px;height:40px;background:linear-gradient(145deg,#0a0a1a,#111128);border-radius:10px;display:flex;align-items:center;justify-content:center;animation:chipPulse 3s ease-in-out infinite;box-shadow:0 4px 20px rgba(0,150,255,0.2);position:relative;border:1px solid rgba(0,150,255,0.25);flex-shrink:0;overflow:hidden}
+.logo-icon::before{content:'';position:absolute;inset:-1px;border-radius:10px;background:linear-gradient(60deg,#0096ff,#00d4ff,#0066ff,#0096ff,#00d4ff);z-index:-1;animation:borderGlow 2.5s linear infinite;background-size:300% 300%}
+@keyframes borderGlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes chipPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+.chip-svg{width:28px;height:28px;display:block}
+.chip-bg{fill:#111;stroke:#333;stroke-width:.8}
+.chip-core{fill:none;stroke:#222;stroke-width:.5}
+.chip-pin{fill:#fff;opacity:.9}
+.chip-pin-o{fill:#0096ff;opacity:.9}
+.chip-trace{stroke:#0066ff;stroke-width:.6;fill:none;stroke-linecap:round}
+.c1{stroke-dasharray:24;animation:flow1 1.8s ease-in-out infinite}
+.c2{stroke-dasharray:28;animation:flow2 2s ease-in-out infinite;animation-delay:.3s}
+.c3{stroke-dasharray:20;animation:flow3 1.5s ease-in-out infinite;animation-delay:.6s}
+.c4{stroke-dasharray:24;animation:flow1 1.8s ease-in-out infinite;animation-delay:.9s}
+@keyframes flow1{0%{stroke-dashoffset:24;opacity:0}30%{opacity:1}70%{opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+@keyframes flow2{0%{stroke-dashoffset:28;opacity:0}30%{opacity:1}70%{opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+@keyframes flow3{0%{stroke-dashoffset:20;opacity:0}30%{opacity:1}70%{opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+.chip-dot{fill:#00d4ff;animation:dotGlow 1.2s ease-in-out infinite alternate}
+@keyframes dotGlow{from{opacity:.4}to{opacity:1}}
+.logo span{color:var(--accent)}
+.nav{display:flex;flex-direction:column;gap:4px;flex:1;height:100%}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;cursor:pointer;transition:all var(--transition);color:var(--text-muted);font-weight:500;border:none;background:transparent;width:100%;text-align:left;font-size:13px;font-family:inherit}
+.nav-item:hover{background:var(--blue-dim);color:var(--text)}
+.nav-item.active{background:var(--accent);color:#000;font-weight:600;box-shadow:0 4px 16px rgba(200,255,0,0.25)}
+.nav-item svg{width:18px;height:18px;flex-shrink:0}
+.menu-toggle{display:none;position:fixed;top:14px;left:14px;z-index:200;background:var(--surface);border:1px solid var(--border);padding:10px;border-radius:10px;cursor:pointer;color:var(--text);transition:all var(--transition)}
+.menu-toggle:hover{border-color:var(--blue);color:var(--blue)}
+.main{flex:1;margin-left:260px;padding:28px 30px;min-height:100vh}
+.section{display:none;animation:fadeIn .25s ease}
+.section.active{display:block}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.section-title{font-size:22px;font-weight:700;margin-bottom:20px;position:relative;display:inline-block}
+.section-title::after{content:'';position:absolute;bottom:-5px;left:0;width:35px;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--blue),var(--accent));transition:width .4s ease}
+.section-title:hover::after{width:100%}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:18px;transition:all var(--transition)}
+.card:hover{border-color:var(--blue)}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.card-title{font-size:15px;font-weight:600}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:all var(--transition);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--border);transition:background var(--transition)}
+.stat-card:hover::before{background:var(--blue)}
+.stat-card:hover{transform:translateY(-3px);border-color:var(--border);box-shadow:0 4px 24px rgba(0,0,0,0.4)}
+.stat-card .label{color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.stat-card .value{font-size:26px;font-weight:700;line-height:1.2}
+.stat-card .value.accent{color:var(--accent)}
+.stat-card .sub{font-size:11px;color:var(--text-muted);margin-top:4px}
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
+th{color:var(--text-muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.5px;background:var(--surface-2)}
+tr{transition:background var(--transition)}
+tbody tr:hover{background:var(--blue-dim)}
+.status{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.status .dot{width:5px;height:5px;border-radius:50%}
+.status.aguardando{background:var(--warning-bg);color:var(--warning)}
+.status.aguardando .dot{background:var(--warning);animation:pulseFast 1s ease infinite}
+.status.andamento{background:var(--blue-dim);color:var(--blue)}
+.status.andamento .dot{background:var(--blue)}
+.status.concluido,.status.entregue{background:var(--success-bg);color:var(--success)}
+.status.concluido .dot,.status.entregue .dot{background:var(--success)}
+.status.cancelado{background:var(--danger-bg);color:var(--danger)}
+.status.cancelado .dot{background:var(--danger)}
+@keyframes pulseFast{0%,100%{opacity:1}50%{opacity:.5}}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;margin-bottom:5px;color:var(--text-muted);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.3px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;transition:all var(--transition);font-family:inherit}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim);background:var(--surface)}
+.form-group textarea{resize:vertical;min-height:70px}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 16px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all var(--transition);font-family:inherit;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#000;box-shadow:0 4px 16px rgba(200,255,0,0.2)}
+.btn-primary:hover{background:var(--accent-hover);transform:translateY(-2px);box-shadow:0 6px 24px rgba(200,255,0,0.35)}
+.btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--blue);transform:translateY(-1px)}
+.btn-danger{background:var(--danger-bg);color:var(--danger)}
+.btn-danger:hover{background:rgba(255,68,68,0.2);transform:translateY(-1px)}
+.btn-success{background:var(--success-bg);color:var(--success)}
+.btn-sm{padding:6px 10px;font-size:11px}
+.btn-group{display:flex;gap:5px;flex-wrap:wrap}
+.btn:active{transform:scale(.95)}
+.search-box{display:flex;gap:10px;margin-bottom:18px}
+.search-box input{flex:1;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;transition:all var(--transition)}
+.search-box input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-dim)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-overlay.active{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;animation:modalIn .3s ease;box-shadow:0 8px 40px rgba(0,0,0,0.6)}
+.modal-lg{max-width:850px}
+@keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;line-height:1;transition:color var(--transition)}
+.modal-close:hover{color:var(--text)}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;padding-top:12px;border-top:1px solid var(--border)}
+.message{padding:10px 12px;border-radius:10px;margin-bottom:12px;display:none;font-size:12px;font-weight:500}
+.message.success{display:block;background:var(--success-bg);color:var(--success);border:1px solid rgba(0,217,116,0.2)}
+.message.error{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid rgba(255,68,68,0.2)}
+.filter-group{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filter-group select,.filter-group input{padding:7px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;transition:all var(--transition)}
+.filter-group select:focus,.filter-group input:focus{border-color:var(--blue);outline:none}
+.checklist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px}
+.checklist-item{display:flex;align-items:center;gap:6px;padding:6px 9px;background:var(--surface-2);border-radius:8px;cursor:pointer;transition:all var(--transition);border:1px solid transparent;font-size:11px;user-select:none}
+.checklist-item:hover{border-color:var(--border)}
+.checklist-item.checked{background:var(--blue-dim);border-color:var(--blue);color:var(--blue-bright)}
+.checklist-item .check{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all var(--transition);flex-shrink:0}
+.checklist-item.checked .check{background:var(--blue);border-color:var(--blue)}
+.checklist-item.checked .check::after{content:'\2713';color:#000;font-size:10px;font-weight:700}
+.autocomplete-wrapper{position:relative}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;max-height:180px;overflow-y:auto;z-index:50;display:none}
+.autocomplete-list.active{display:block}
+.autocomplete-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:all .2s ease;font-size:12px}
+.autocomplete-item:hover{background:var(--surface);padding-left:16px;color:var(--blue)}
+.total-display{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;text-align:right;margin-top:14px;transition:all var(--transition)}
+.total-display:hover{border-color:var(--blue);box-shadow:0 8px 32px rgba(0,150,255,0.08)}
+.total-display .label{color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.total-display .value{font-size:24px;font-weight:700;color:var(--blue)}
+.history-item{background:var(--surface-2);border-radius:var(--radius);padding:12px;margin-bottom:8px}
+.history-header{display:flex;justify-content:space-between;margin-bottom:5px}
+.history-id{font-weight:600;color:var(--blue)}
+.history-device{font-size:12px;color:var(--text-muted)}
+.empty-state{text-align:center;padding:36px 20px;color:var(--text-muted)}
+.relatorio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.relatorio-card{background:var(--surface-2);border-radius:var(--radius);padding:14px;text-align:center;transition:all var(--transition)}
+.relatorio-card:hover{transform:translateY(-2px);box-shadow:0 4px 24px rgba(0,0,0,0.4)}
+.relatorio-card .r-value{font-size:18px;font-weight:700;color:var(--blue);margin-bottom:3px}
+.relatorio-card .r-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px}
+.tabs{display:flex;gap:4px;margin-bottom:18px;background:var(--surface-2);border-radius:10px;padding:4px;flex-wrap:wrap}
+.tab-btn{padding:7px 12px;border-radius:8px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;font-size:11px;font-weight:500;font-family:inherit;transition:all var(--transition)}
+.tab-btn.active{background:var(--surface);color:var(--blue);box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.tab-content,.tab-content-r,.tab-content-f{display:none}
+.tab-content.active,.tab-content-r.active,.tab-content-f.active{display:block}
+.text-muted{color:var(--text-muted)}
+.mb-16{margin-bottom:16px}
+.mt-16{margin-top:16px}
+.flex{display:flex}
+.gap-8{gap:8px}
+.gap-12{gap:12px}
+.items-center{align-items:center}
+.justify-between{justify-content:space-between}
+.flex-wrap{flex-wrap:wrap}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0;padding:60px 12px 16px}
+  .menu-toggle{display:block}
+  .form-row{grid-template-columns:1fr}
+  .card-grid{grid-template-columns:1fr}
+  .modal{max-width:100%!important;margin:10px;max-height:95vh}
+  .checklist-grid{grid-template-columns:repeat(2,1fr)}
+}
+.termo-container{display:none;position:fixed;inset:0;background:#fff;z-index:2000;overflow-y:auto}
+.termo-container.active{display:block}
+.termo-content{max-width:794px;margin:30px auto;padding:36px;background:#fff;color:#000;font-family:var(--font)}
+.termo-content h1{font-size:17px;text-align:center;margin-bottom:22px;font-weight:700;border-bottom:2px solid #000;padding-bottom:12px;color:#000}
+.termo-content h2{font-size:12px;font-weight:700;margin:14px 0 7px;text-transform:uppercase;color:#333}
+.termo-content p{font-size:11px;line-height:1.7;margin-bottom:7px;text-align:justify;color:#222}
+.termo-content .dados{background:#f5f5f5;padding:12px;border-radius:6px;margin-bottom:12px;font-size:11px}
+.termo-content .dados-row{display:flex;margin-bottom:4px}
+.termo-content .dados-label{font-weight:600;min-width:120px;color:#333}
+.termo-content .assinaturas{margin-top:28px;display:flex;justify-content:space-between;gap:36px}
+.termo-content .assinatura-box{flex:1;text-align:center}
+.termo-content .linha-assinatura{border-bottom:1.5px solid #000;height:30px;margin-bottom:5px}
+.termo-content .termo-footer{text-align:center;margin-top:22px;font-size:9px;color:#999}
+.termo-content .valor-destaque{background:#f0f0f0;padding:10px 14px;border-radius:6px;margin:10px 0;text-align:center}
+.termo-content .valor-num{font-size:17px;font-weight:700;color:#000}
+.termo-venda-container{display:none;position:fixed;inset:0;background:#fff;z-index:2000;overflow-y:auto}
+.termo-venda-container.active{display:block}
+.termo-venda-content{max-width:794px;margin:30px auto;padding:36px;background:#fff;color:#000;font-family:var(--font)}
+.termo-venda-content h1{font-size:18px;text-align:center;margin-bottom:18px;font-weight:700;border-bottom:2px solid #000;padding-bottom:10px;color:#000}
+.termo-venda-content h2{font-size:12px;font-weight:700;margin:12px 0 6px;text-transform:uppercase;color:#333;border-bottom:1px solid #ddd;padding-bottom:4px}
+.termo-venda-content p{font-size:11px;line-height:1.6;margin-bottom:6px;text-align:justify;color:#222}
+.termo-venda-content .dados{background:#f8f8f8;padding:14px;border-radius:6px;margin-bottom:14px;font-size:11px;border:1px solid #e0e0e0}
+.termo-venda-content .dados-row{display:flex;margin-bottom:5px;border-bottom:1px dashed #eee;padding-bottom:3px}
+.termo-venda-content .dados-label{font-weight:600;min-width:140px;color:#333}
+.termo-venda-content .dados-value{color:#000}
+.termo-venda-content .destaque-box{background:#fff3cd;padding:12px;border-radius:6px;margin:12px 0;border:1px solid #ffc107}
+.termo-venda-content .destaque-box p{margin-bottom:4px;font-size:10.5px}
+.termo-venda-content .assinaturas{margin-top:24px;display:flex;justify-content:space-between;gap:40px}
+.termo-venda-content .assinatura-box{flex:1;text-align:center}
+.termo-venda-content .linha-assinatura{border-bottom:1.5px solid #000;height:35px;margin-bottom:6px}
+.termo-venda-content .termo-footer{text-align:center;margin-top:20px;font-size:9px;color:#999;border-top:1px solid #eee;padding-top:10px}
+.termo-venda-content .valor-total{background:#28a745;color:#fff;padding:12px 20px;border-radius:6px;text-align:center;font-size:16px;font-weight:700;margin:12px 0}
+@media print{body *{visibility:hidden}.termo-container,.termo-container *{visibility:visible}.termo-venda-container,.termo-venda-container *{visibility:visible}.termo-container,.termo-venda-container{position:absolute;left:0;top:0;background:#fff}.btn-imprimir{display:none!important}}
+</style>
+</head>
+<body>
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:380px;text-align:center">
+    <div style="margin-bottom:24px"><div class="logo-icon" style="margin:0 auto;width:60px;height:60px"><svg viewBox="0 0 48 48" class="chip-svg"><rect x="8" y="8" width="32" height="32" rx="3" class="chip-bg"/><rect x="11" y="11" width="26" height="26" rx="2" class="chip-core"/><rect x="13" y="3" width="3" height="5" rx=".5" class="chip-pin"/><rect x="19" y="3" width="3" height="5" rx=".5" class="chip-pin"/><rect x="26" y="3" width="3" height="5" rx=".5" class="chip-pin"/><rect x="32" y="3" width="3" height="5" rx=".5" class="chip-pin"/><rect x="13" y="40" width="3" height="5" rx=".5" class="chip-pin"/><rect x="19" y="40" width="3" height="5" rx=".5" class="chip-pin"/><rect x="26" y="40" width="3" height="5" rx=".5" class="chip-pin"/><rect x="32" y="40" width="3" height="5" rx=".5" class="chip-pin"/><rect x="3" y="14" width="5" height="3" rx=".5" class="chip-pin-o"/><rect x="3" y="22" width="5" height="3" rx=".5" class="chip-pin"/><rect x="3" y="31" width="5" height="3" rx=".5" class="chip-pin"/><rect x="40" y="14" width="5" height="3" rx=".5" class="chip-pin"/><rect x="40" y="22" width="5" height="3" rx=".5" class="chip-pin-o"/><rect x="40" y="31" width="5" height="3" rx=".5" class="chip-pin"/><path d="M15 15 L21 15 L21 17" class="chip-trace"/><path d="M22 15 L33 15" class="chip-trace"/><path d="M15 21 L25 21 L25 23" class="chip-trace"/><path d="M28 21 L33 21" class="chip-trace"/><path d="M15 27 L20 27 L20 29" class="chip-trace"/><path d="M22 27 L33 27" class="chip-trace"/><path d="M15 33 L25 33 L25 31" class="chip-trace"/><path d="M28 33 L33 33" class="chip-trace"/><path d="M27 17 L27 21" class="chip-trace"/><path d="M21 23 L21 27" class="chip-trace"/><path d="M8 14 L12 14 L12 17" class="chip-current c1"/><path d="M27 11 L27 16" class="chip-current c2"/><path d="M21 27 L21 33 L25 33" class="chip-current c3"/><path d="M36 22 L40 22" class="chip-current c4"/><circle cx="15" cy="15" r="1.5" class="chip-dot"/><circle cx="27" cy="19" r="1.5" class="chip-dot"/><circle cx="23" cy="31" r="1.5" class="chip-dot"/><circle cx="36" cy="22" r="1.5" class="chip-dot"/></svg></div></div>
+    <h2 style="margin-bottom:8px;color:var(--text)">TechCELL CRM</h2>
+    <p style="color:var(--text-muted);margin-bottom:24px;font-size:13px">Entre com suas credenciais</p>
+    <form onsubmit="login(event)" style="text-align:left">
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" required style="width:100%;padding:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px"></div>
+      <div class="form-group"><label>Senha</label><input type="password" id="login-senha" required style="width:100%;padding:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px"></div>
+      <button type="submit" id="login-btn" class="btn btn-primary" style="width:100%;padding:12px;font-size:14px;margin-top:8px">Entrar</button>
+    </form>
+  </div>
+</div>
+<div class="app" id="app" style="display:none">
+<button class="menu-toggle" onclick="toggleMenu()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><div class="logo-icon"><svg viewBox="0 0 48 48" class="chip-svg">
+    <rect x="8" y="8" width="32" height="32" rx="3" class="chip-bg"/><rect x="11" y="11" width="26" height="26" rx="2" class="chip-core"/>
+    <rect x="13" y="3" width="3" height="5" rx=".5" class="chip-pin"/><rect x="19" y="3" width="3" height="5" rx=".5" class="chip-pin"/>
+    <rect x="26" y="3" width="3" height="5" rx=".5" class="chip-pin"/><rect x="32" y="3" width="3" height="5" rx=".5" class="chip-pin"/>
+    <rect x="13" y="40" width="3" height="5" rx=".5" class="chip-pin"/><rect x="19" y="40" width="3" height="5" rx=".5" class="chip-pin"/>
+    <rect x="26" y="40" width="3" height="5" rx=".5" class="chip-pin"/><rect x="32" y="40" width="3" height="5" rx=".5" class="chip-pin"/>
+    <rect x="3" y="14" width="5" height="3" rx=".5" class="chip-pin-o"/><rect x="3" y="22" width="5" height="3" rx=".5" class="chip-pin"/>
+    <rect x="3" y="31" width="5" height="3" rx=".5" class="chip-pin"/><rect x="40" y="14" width="5" height="3" rx=".5" class="chip-pin"/>
+    <rect x="40" y="22" width="5" height="3" rx=".5" class="chip-pin-o"/><rect x="40" y="31" width="5" height="3" rx=".5" class="chip-pin"/>
+    <path d="M15 15 L21 15 L21 17" class="chip-trace"/><path d="M22 15 L33 15" class="chip-trace"/>
+    <path d="M15 21 L25 21 L25 23" class="chip-trace"/><path d="M28 21 L33 21" class="chip-trace"/>
+    <path d="M15 27 L20 27 L20 29" class="chip-trace"/><path d="M22 27 L33 27" class="chip-trace"/>
+    <path d="M15 33 L25 33 L25 31" class="chip-trace"/><path d="M28 33 L33 33" class="chip-trace"/>
+    <path d="M27 17 L27 21" class="chip-trace"/><path d="M21 23 L21 27" class="chip-trace"/>
+    <path d="M8 14 L12 14 L12 17" class="chip-current c1"/><path d="M27 11 L27 16" class="chip-current c2"/>
+    <path d="M21 27 L21 33 L25 33" class="chip-current c3"/><path d="M36 22 L40 22" class="chip-current c4"/>
+    <circle cx="15" cy="15" r="1.5" class="chip-dot"/><circle cx="27" cy="19" r="1.5" class="chip-dot"/>
+    <circle cx="23" cy="31" r="1.5" class="chip-dot"/><circle cx="36" cy="22" r="1.5" class="chip-dot"/>
+  </svg></div>Tech<span>CELL</span></div>
+  <nav class="nav">
+    <button class="nav-item active" onclick="showSection('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard
+    </button>
+    <button class="nav-item" onclick="showSection('clientes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes
+    </button>
+    <button class="nav-item" onclick="showSection('ordens')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Ordens
+    </button>
+    <button class="nav-item" onclick="showSection('relatorios')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>Relatorios
+    </button>
+    <button class="nav-item" onclick="showSection('financeiro')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Financeiro
+    </button>
+    <button class="nav-item" onclick="showSection('vendas-celular')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>Vendas Celular
+    </button>
+    <button class="nav-item" onclick="showSection('config')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Config
+    </button>
+    <button class="nav-item" onclick="logout()" style="color:var(--danger);margin-top:auto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair
+    </button>
+  </nav>
+</aside>
+<main class="main">
+<section class="section active" id="section-dashboard">
+  <h1 class="section-title">Dashboard</h1>
+  <div class="card-grid" id="dash-stats"></div>
+  <div class="card"><div class="card-header"><span class="card-title">Ultimas OS</span></div>
+    <div class="table-container"><table><thead><tr><th>OS</th><th>Cliente</th><th>Dispositivo</th><th>Status</th><th>Valor</th></tr></thead><tbody id="dashboard-table"></tbody></table></div>
+  </div>
+  <div class="card"><div class="card-header"><span class="card-title">Alertas</span></div><div id="alertas-container"><p class="text-muted" style="padding:8px 0">Nenhum alerta.</p></div></div>
+</section>
+<section class="section" id="section-clientes">
+  <h1 class="section-title">Clientes</h1>
+  <div class="message" id="msg-cliente"></div>
+  <div class="search-box"><input type="text" id="busca-cliente" placeholder="Buscar por nome, CPF ou telefone..." oninput="renderClientes()"><button class="btn btn-primary" onclick="abrirModalCliente()">+ Novo</button></div>
+  <div class="card"><div class="table-container"><table><thead><tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>Email</th><th>OS</th><th>Acoes</th></tr></thead><tbody id="tabela-clientes"></tbody></table></div></div>
+</section>
+<section class="section" id="section-ordens">
+  <h1 class="section-title">Ordens de Servico</h1>
+  <div class="message" id="msg-os"></div>
+  <div class="search-box">
+    <input type="text" id="busca-os" placeholder="Buscar OS, cliente ou dispositivo..." oninput="renderOrdens()">
+    <select id="filtro-os" onchange="renderOrdens()" style="padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px">
+      <option value="">Todos</option><option value="aguardando_aprovacao">Aguardando</option><option value="em_andamento">Andamento</option><option value="aguardando_peca">Peca</option><option value="concluido">Concluido</option><option value="entregue">Entregue</option><option value="cancelado">Cancelado</option>
+    </select>
+    <button class="btn btn-primary" onclick="abrirModalOS()">+ Nova OS</button>
+  </div>
+  <div class="card"><div class="table-container"><table><thead><tr><th>OS</th><th>Cliente</th><th>Dispositivo</th><th>Servico</th><th>Status</th><th>Valor</th><th>Garantia</th><th>Acoes</th></tr></thead><tbody id="tabela-ordens"></tbody></table></div></div>
+</section>
+<section class="section" id="section-relatorios">
+  <h1 class="section-title">Relatorios</h1>
+  <div class="tabs"><button class="tab-btn active" onclick="switchTab(this,'r-resumo')">Resumo</button><button class="tab-btn" onclick="switchTab(this,'r-tecnicos')">Tecnicos</button><button class="tab-btn" onclick="switchTab(this,'r-servicos')">Servicos</button></div>
+  <div class="tab-content active" id="tab-r-resumo"><div class="relatorio-grid" id="rel-resumo"></div></div>
+  <div class="tab-content" id="tab-r-tecnicos"><div class="card"><div class="table-container"><table><thead><tr><th>Nome</th><th>Concluidas</th><th>Andamento</th><th>Faturamento</th></tr></thead><tbody id="rel-tecnicos"></tbody></table></div></div></div>
+  <div class="tab-content" id="tab-r-servicos"><div class="card"><div class="table-container"><table><thead><tr><th>Servico</th><th>Qtd</th><th>Faturamento</th><th>%</th></tr></thead><tbody id="rel-servicos"></tbody></table></div></div></div>
+</section>
+<section class="section" id="section-financeiro">
+  <h1 class="section-title">Financeiro</h1>
+  <div class="tabs"><button class="tab-btn active" onclick="switchTab(this,'f-receitas')">Receitas</button><button class="tab-btn" onclick="switchTab(this,'f-despesas')">Despesas</button><button class="tab-btn" onclick="switchTab(this,'f-resultado')">Resultado</button></div>
+  <div class="tab-content active" id="tab-f-receitas">
+    <div class="message" id="msg-fin"></div>
+    <div class="filter-group mb-16">
+      <select id="fin-mes" onchange="renderFinanceiro()"><option value="">Todos</option><option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option><option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option></select>
+      <select id="fin-ano" onchange="renderFinanceiro()"></select>
+    </div>
+    <div class="card"><div class="table-container"><table><thead><tr><th>OS</th><th>Cliente</th><th>Servico</th><th>Data</th><th>Pgto</th><th>Valor</th></tr></thead><tbody id="tabela-financeiro"></tbody></table></div></div>
+    <div class="total-display"><div class="label">Total Receitas</div><div class="value" id="total-receitas">R$ 0,00</div></div>
+  </div>
+  <div class="tab-content" id="tab-f-despesas">
+    <div class="flex justify-between items-center mb-16"><span class="text-muted">Despesas</span><button class="btn btn-primary btn-sm" onclick="abrirModalDespesa()">+ Nova</button></div>
+    <div class="card"><div class="table-container"><table><thead><tr><th>Data</th><th>Descricao</th><th>Categoria</th><th>Valor</th><th>Acoes</th></tr></thead><tbody id="tabela-despesas"></tbody></table></div></div>
+    <div class="total-display"><div class="label">Total Despesas</div><div class="value" id="total-despesas">R$ 0,00</div></div>
+  </div>
+  <div class="tab-content" id="tab-f-resultado">
+    <div class="card-grid"><div class="stat-card"><div class="label">Receitas</div><div class="value accent" id="res-receita">R$ 0</div></div><div class="stat-card"><div class="label">Despesas</div><div class="value" style="color:var(--danger)" id="res-despesa">R$ 0</div></div><div class="stat-card"><div class="label">Lucro</div><div class="value" id="res-lucro">R$ 0</div></div><div class="stat-card"><div class="label">Margem</div><div class="value" id="res-margem">0%</div></div></div>
+  </div>
+</section>
+<section class="section" id="section-vendas-celular">
+  <h1 class="section-title">Vendas de Celular</h1>
+  <div class="message" id="msg-venda-celular"></div>
+  <div class="search-box">
+    <input type="text" id="busca-venda" placeholder="Buscar por cliente, modelo ou IMEI..." oninput="renderVendasCelular()">
+    <button class="btn btn-primary" onclick="abrirModalVendaCelular()">+ Nova Venda</button>
+  </div>
+  <div class="card">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Data</th>
+            <th>Cliente</th>
+            <th>Aparelho</th>
+            <th>IMEI</th>
+            <th>Valor</th>
+            <th>Pagamento</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-vendas-celular"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="total-display">
+    <div class="label">Total Vendido no Mês</div>
+    <div class="value" id="total-vendas-celular">R$ 0,00</div>
+  </div>
+</section>
+<section class="section" id="section-config">
+  <h1 class="section-title">Configuracoes</h1>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Dados do Prestador</span></div>
+    <p class="text-muted mb-16">Seus dados aparecem no termo de servico.</p>
+    <form onsubmit="salvarPrestador(event)">
+      <div class="form-row"><div class="form-group"><label>Nome</label><input type="text" id="pref-nome" required></div><div class="form-group"><label>CPF/CNPJ</label><input type="text" id="pref-doc"></div></div>
+      <div class="form-row"><div class="form-group"><label>Telefone</label><input type="text" id="pref-tel"></div><div class="form-group"><label>Email</label><input type="email" id="pref-email"></div></div>
+      <div class="form-group"><label>Endereco</label><input type="text" id="pref-end"></div>
+      <div class="flex justify-between items-center mt-16"><span id="pref-status" class="text-muted" style="font-size:12px"></span><button type="submit" class="btn btn-primary">Salvar</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Backup</span></div>
+    <p class="text-muted mb-16">Exporte ou importe todos os dados.</p>
+    <div class="btn-group"><button class="btn btn-primary" onclick="exportarDados()">Exportar JSON</button><button class="btn btn-secondary" onclick="document.getElementById('import-arquivo').click()">Importar</button><input type="file" id="import-arquivo" accept=".json" style="display:none" onchange="importarDados(event)"></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Sobre</span></div>
+    <p class="text-muted">TechCELL CRM — Sistema offline. Dados salvos automaticamente no navegador.</p>
+  </div>
+</section>
+</main>
+</div>
+<div class="termo-container" id="termo-container"><div class="termo-content" id="termo-content"></div></div>
+<div class="termo-venda-container" id="termo-venda-container"><div class="termo-venda-content" id="termo-venda-content"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// SUPABASE CONFIG
+const SUPABASE_URL = 'https://apxiqzzbaqcbbvxyvgyx.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFweGlxenpiYXFjYmJ2eHl2Z3l4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzEwODgsImV4cCI6MjA5NDI0NzA4OH0.lN2WSni2Kz1MD086xV_qrjrkRZORREmsd2aL3fAuRLk'
+
+// Inicializar Supabase Auth
+const _supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth: {autoRefreshToken: true, persistSession: true, storageKey: 'tc-auth'}})
+
+// Variáveis globais
+const db = {clientes:[], ordens:[], despesas:[], vendasCelular:[], contador:1, prestador:{}}
+
+// Verificar sessão ao iniciar
+async function initAuth(){
+  const {data: {session: s}, error} = await _supa.auth.getSession()
+  
+  if(error || !s){
+    document.getElementById('login-screen').style.display = 'flex'
+    document.getElementById('app').style.display = 'none'
+  }else{
+    document.getElementById('login-screen').style.display = 'none'
+    document.getElementById('app').style.display = 'flex'
+    await carregarDB()
+  }
+}
+
+// Login com email/senha
+async function login(event){
+  event.preventDefault()
+  const email = document.getElementById('login-email').value
+  const password = document.getElementById('login-senha').value
+  const btn = document.getElementById('login-btn')
+  btn.textContent = 'Entrando...'
+  btn.disabled = true
+  
+  const {error} = await _supa.auth.signInWithPassword({email, password})
+  
+  if(error){
+    alert(error.message)
+    btn.textContent = 'Entrar'
+    btn.disabled = false
+  }else{
+    window.location.reload()
+  }
+}
+
+// Logout
+async function logout(){
+  await _supa.auth.signOut()
+  localStorage.clear()
+  window.location.reload()
+}
+
+// Escutar mudanças de auth
+_supa.auth.onAuthStateChange((event, s) => {
+  if(!s){
+    document.getElementById('login-screen').style.display = 'flex'
+    document.getElementById('app').style.display = 'none'
+  }
+})
+
+const ordemMap = {
+  clienteid:'clienteId', datagarantia:'dataGarantia', obsgarantia:'obsGarantia',
+  dataentrada:'dataEntrada', datasaida:'dataSaida'
+}
+const ordemRev = Object.fromEntries(Object.entries(ordemMap).map(([k,v])=>[v,k]))
+
+function fixKeys(obj, map){
+  if(Array.isArray(obj)) return obj.map(v=>fixKeys(v, map))
+  if(!obj || typeof obj !== 'object') return obj
+  const r = {}
+  for(const [k,v] of Object.entries(obj)){
+    r[map[k] || k] = v
+  }
+  return r
+}
+
+async function carregarDB(){
+  try{
+    const [clientesRes, ordensRes, despesasRes, vendasCelularRes, configRes] = await Promise.all([
+      _supa.from('clientes').select('*'),
+      _supa.from('ordens').select('*'),
+      _supa.from('despesas').select('*'),
+      _supa.from('vendas_celular').select('*'),
+      _supa.from('config').select('*').eq('id', 1).single()
+    ])
+    db.clientes = clientesRes.data || []
+    db.ordens = (ordensRes.data || []).map(o => fixKeys(o, ordemMap))
+    db.despesas = despesasRes.data || []
+    db.vendasCelular = vendasCelularRes.data || []
+    if(configRes.data){
+      db.contador = configRes.data.contador || 1
+      db.prestador = configRes.data.prestador || {}
+    }
+    renderDashboard(); renderClientes(); renderOrdens(); renderFinanceiro(); renderVendasCelular()
+  }catch(e){
+    console.log('Erro ao carregar:', e)
+  }
+}
+
+async function salvarDB(){
+  try{
+    await Promise.all([
+      _supa.from('clientes').upsert(db.clientes, {onConflict: 'id'}),
+      _supa.from('ordens').upsert(db.ordens.map(o => fixKeys(o, ordemRev)), {onConflict: 'id'}),
+      _supa.from('despesas').upsert(db.despesas, {onConflict: 'id'}),
+      _supa.from('vendas_celular').upsert(db.vendasCelular, {onConflict: 'id'}),
+      _supa.from('config').upsert({id: 1, contador: db.contador, prestador: db.prestador}, {onConflict: 'id'})
+    ])
+  }catch(e){
+    console.log('Erro ao salvar:', e)
+  }
+  for(const k of Object.keys(db))localStorage.setItem('tc-'+k,JSON.stringify(db[k]))
+}
+
+initAuth()
+
+function getClientes(){return db.clientes}
+function getOrdens(){return db.ordens}
+function getDespesas(){return db.despesas}
+function getVendasCelular(){return db.vendasCelular}
+function proxOS(){return 'OS-'+String(db.contador).padStart(4,'0')}
+function proxVenda(){return 'VC-'+String(db.contador).padStart(4,'0')}
+function addCliente(c){db.clientes.push(c);salvarDB()}
+function updCliente(id,c){const i=db.clientes.findIndex(x=>x.id===id);if(i>-1){db.clientes[i]=c;salvarDB()}}
+function delCliente(id){db.clientes=db.clientes.filter(x=>x.id!==id);salvarDB()}
+function addOrdem(o){db.ordens.push(o);db.contador++;salvarDB()}
+function updOrdem(id,o){const i=db.ordens.findIndex(x=>x.id===id);if(i>-1){db.ordens[i]=o;salvarDB()}}
+function excluirOrdem(id){db.ordens=db.ordens.filter(x=>x.id!==id);salvarDB()}
+function addDespesa(d){db.despesas.push(d);salvarDB()}
+function delDespesa(id){db.despesas=db.despesas.filter(x=>x.id!==id);salvarDB()}
+function addVendaCelular(v){db.vendasCelular.push(v);db.contador++;salvarDB()}
+function updVendaCelular(id,v){const i=db.vendasCelular.findIndex(x=>x.id===id);if(i>-1){db.vendasCelular[i]=v;salvarDB()}}
+function delVendaCelular(id){db.vendasCelular=db.vendasCelular.filter(x=>x.id!==id);salvarDB()}
+
+function showSection(s){
+  document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'))
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'))
+  document.getElementById('section-'+s).classList.add('active')
+  const idx={dashboard:0,clientes:1,ordens:2,relatorios:3,financeiro:4,'vendas-celular':5,config:6}
+  document.querySelectorAll('.nav-item')[idx[s]].classList.add('active')
+  document.getElementById('sidebar').classList.remove('open')
+  if(s==='dashboard')renderDashboard()
+  if(s==='clientes')renderClientes()
+  if(s==='ordens')renderOrdens()
+  if(s==='financeiro')renderFinanceiro()
+  if(s==='relatorios')renderRelatorios()
+  if(s==='vendas-celular')renderVendasCelular()
+}
+function toggleMenu(){document.getElementById('sidebar').classList.toggle('open')}
+function msg(el,text,type){
+  document.getElementById(el).textContent=text
+  document.getElementById(el).className='message '+type
+  setTimeout(()=>document.getElementById(el).className='message',3500)
+}
+function switchTab(btn,tab){
+  const parent=btn.closest('.tabs').parentElement
+  parent.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'))
+  btn.classList.add('active')
+  parent.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'))
+  parent.querySelector('#tab-'+tab).classList.add('active')
+}
+
+// CLIENTES
+function renderClientes(){
+  const f=document.getElementById('busca-cliente').value.toLowerCase()
+  let cs=getClientes()
+  if(f)cs=cs.filter(c=>c.nome.toLowerCase().includes(f)||c.cpf.includes(f)||c.telefone.includes(f))
+  const ordens=getOrdens()
+  document.getElementById('tabela-clientes').innerHTML=cs.length?cs.map(c=>'<tr><td>'+c.nome+'</td><td>'+c.cpf+'</td><td>'+c.telefone+'</td><td>'+(c.email||'-')+'</td><td>'+ordens.filter(o=>o.clienteId===c.id).length+'</td><td><div class="btn-group"><button class="btn btn-sm btn-secondary" onclick="editarCliente('+c.id+')">Editar</button><button class="btn btn-sm btn-secondary" onclick="verHistorico('+c.id+')">Hist</button><button class="btn btn-sm btn-danger" onclick="excluirCliente('+c.id+')">Del</button></div></td></tr>').join(''):'<tr><td colspan="6" class="empty-state">Nenhum cliente</td></tr>'
+}
+
+function abrirModalCliente(dados){
+  const d=dados||{}
+  const modal=document.createElement('div');modal.className='modal-overlay active';modal.id='modal-cliente'
+  modal.innerHTML='<div class="modal"><div class="modal-header"><h2 class="modal-title">'+(d.id?'Editar':'Novo')+' Cliente</h2><button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">&times;</button></div><form onsubmit="salvarCliente(event)"><input type="hidden" id="form-cliente-id" value="'+(d.id||'')+'"><div class="form-row"><div class="form-group"><label>Nome</label><input type="text" id="form-cliente-nome" required value="'+(d.nome||'')+'"></div><div class="form-group"><label>CPF</label><input type="text" id="form-cliente-cpf" maxlength="14" required value="'+(d.cpf||'')+'"></div></div><div class="form-row"><div class="form-group"><label>Telefone</label><input type="text" id="form-cliente-tel" required value="'+(d.telefone||'')+'"></div><div class="form-group"><label>Email</label><input type="email" id="form-cliente-email" value="'+(d.email||'')+'"></div></div><div class="form-group"><label>Endereco</label><input type="text" id="form-cliente-end" value="'+(d.endereco||'')+'"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div></form></div>'
+  document.body.appendChild(modal)
+  modal.addEventListener('click',function(e){if(e.target===this)this.remove()})
+  setTimeout(()=>{
+    document.getElementById('form-cliente-cpf')?.addEventListener('input',function(e){let v=e.target.value.replace(/\D/g,'');v=v.replace(/(\d{3})(\d)/,'$1.$2');v=v.replace(/(\d{3})(\d)/,'$1.$2');v=v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');e.target.value=v})
+    document.getElementById('form-cliente-tel')?.addEventListener('input',function(e){let v=e.target.value.replace(/\D/g,'');if(v.length>10)v=v.replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3');else if(v.length>6)v=v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');else if(v.length>2)v=v.replace(/(\d{2})(\d{0,5})/,'($1) $2');e.target.value=v})
+  },50)
+}
+
+function salvarCliente(e){
+  e.preventDefault()
+  const id=document.getElementById('form-cliente-id').value
+  const c={id:id?parseInt(id):Date.now(),nome:document.getElementById('form-cliente-nome').value,cpf:document.getElementById('form-cliente-cpf').value,telefone:document.getElementById('form-cliente-tel').value,email:document.getElementById('form-cliente-email').value,endereco:document.getElementById('form-cliente-end').value}
+  id?updCliente(parseInt(id),c):addCliente(c)
+  document.getElementById('modal-cliente')?.remove()
+  renderClientes()
+  msg('msg-cliente',id?'Atualizado!':'Cliente salvo!','success')
+}
+
+function editarCliente(id){const c=getClientes().find(x=>x.id===id);if(c)abrirModalCliente(c)}
+
+function verHistorico(id){
+  const c=getClientes().find(x=>x.id===id)
+  const ordens=getOrdens().filter(o=>o.clienteId===id)
+  const modal=document.createElement('div');modal.className='modal-overlay active'
+  modal.innerHTML='<div class="modal"><div class="modal-header"><h2 class="modal-title">'+(c?c.nome:'')+'</h2><button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">&times;</button></div>'+(ordens.length?ordens.map(o=>'<div class="history-item"><div class="history-header"><span class="history-id">'+o.numero+'</span><span class="status '+sttClass(o.status)+'"><span class="dot"></span>'+sttLabel(o.status)+'</span></div><div class="history-device">'+o.marca+' '+o.modelo+' - '+servLabel(o.tipo)+'</div><div style="margin-top:4px;font-size:12px">R$ '+(parseFloat(o.valor||0).toFixed(2))+' <span style="color:var(--text-muted);margin-left:10px">'+fmtData(o.dataEntrada)+'</span></div></div>').join(''):'<p class="empty-state">Nenhum servico</p>')+'</div>'
+  document.body.appendChild(modal)
+  modal.addEventListener('click',function(e){if(e.target===this)this.remove()})
+}
+
+function excluirCliente(id){
+  const os=getOrdens().filter(o=>o.clienteId===id).length
+  if(!confirm(os?'Cliente possui '+os+' OS vinculada(s). Excluir?':'Excluir cliente?'))return
+  delCliente(id)
+  renderClientes()
+  msg('msg-cliente','Cliente excluido!','success')
+}
+
+// ORDENS
+function renderOrdens(){
+  let ordens=getOrdens()
+  const clientes=getClientes()
+  const f=document.getElementById('busca-os').value.toLowerCase()
+  const sf=document.getElementById('filtro-os').value
+  if(f)ordens=ordens.filter(o=>{const c=clientes.find(x=>x.id===o.clienteId);return o.numero.toLowerCase().includes(f)||(c&&c.nome.toLowerCase().includes(f))||o.marca.toLowerCase().includes(f)||o.modelo.toLowerCase().includes(f)})
+  if(sf)ordens=ordens.filter(o=>o.status===sf)
+  ordens.sort((a,b)=>new Date(b.dataEntrada)-new Date(a.dataEntrada))
+  document.getElementById('tabela-ordens').innerHTML=ordens.length?ordens.map(o=>{
+    const c=clientes.find(x=>x.id===o.clienteId);const g=verifGarantia(o)
+    return '<tr><td style="font-weight:600;color:var(--blue)">'+o.numero+'</td><td>'+(c?c.nome:'N/A')+'</td><td>'+o.marca+' '+o.modelo+'</td><td>'+servLabel(o.tipo)+'</td><td><span class="status '+sttClass(o.status)+'"><span class="dot"></span>'+sttLabel(o.status)+'</span></td><td>R$ '+(parseFloat(o.valor||0).toFixed(2))+'</td><td style="font-size:11px">'+g+'</td><td><div class="btn-group"><button class="btn btn-sm btn-secondary" onclick="editarOrdem('+o.id+')">Editar</button><button class="btn btn-sm btn-secondary" onclick="gerarTermo('+o.id+')">Termo</button><button class="btn btn-sm btn-danger" onclick="excluirOrdem('+o.id+')">Del</button></div></td></tr>'
+  }).join(''):'<tr><td colspan="8" class="empty-state">Nenhuma OS</td></tr>'
+}
+
+function verifGarantia(o){
+  if(!o.dataGarantia)return'-'
+  const hoje=new Date();const g=new Date(o.dataGarantia+'T12:00:00')
+  if(g<hoje&&o.status==='entregue')return'<span style="color:var(--danger)">Expirada</span>'
+  if(o.status==='entregue'&&g>=hoje){const d=Math.ceil((g-hoje)/(1000*60*60*24));return'<span style="color:var(--success)">'+d+'d</span>'}
+  return fmtData(o.dataGarantia)
+}
+
+function abrirModalOS(dados){
+    const d=dados||{}
+    const modal=document.createElement('div');modal.className='modal-overlay active';modal.id='modal-os'
+    let html='<div class="modal modal-lg"><div class="modal-header"><h2 class="modal-title">'+(d.id?'Editar '+d.numero:'Nova OS')+'</h2><button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">&times;</button></div><form onsubmit="salvarOS(event)"><input type="hidden" id="os-id" value="'+(d.id||'')+'"><input type="hidden" id="os-num" value="'+(d.numero||'')+'"><div class="form-row"><div class="form-group"><label>Cliente</label><div class="autocomplete-wrapper"><input type="text" id="os-cliente" required value="'+(d._clienteNome||'')+'" oninput="buscarClientesAuto(this.value)"><div class="autocomplete-list" id="auto-clientes"></div></div></div></div><h3 style="margin:12px 0 6px;font-size:11px;color:var(--text-muted);text-transform:uppercase">Dispositivo</h3><div class="form-row"><div class="form-group"><label>Marca</label><input type="text" id="os-marca" required value="'+(d.marca||'')+'"></div><div class="form-group"><label>Modelo</label><input type="text" id="os-modelo" required value="'+(d.modelo||'')+'"></div><div class="form-group"><label>IMEI</label><input type="text" id="os-imei" value="'+(d.imei||'')+'"></div></div><h3 style="margin:12px 0 6px;font-size:11px;color:var(--text-muted);text-transform:uppercase">Servico</h3><div class="form-row"><div class="form-group"><label>Tipo</label><select id="os-tipo" required><option value="">Selecione</option><option value="troca_tela"'+(d.tipo==='troca_tela'?' selected':'')+'>Troca Tela</option><option value="bateria"'+(d.tipo==='bateria'?' selected':'')+'>Bateria</option><option value="conector"'+(d.tipo==='conector'?' selected':'')+'>Conector</option><option value="software"'+(d.tipo==='software'?' selected':'')+'>Software</option><option value="camera"'+(d.tipo==='camera'?' selected':'')+'>Camera</option><option value="audio"'+(d.tipo==='audio'?' selected':'')+'>Audio</option><option value="outros"'+(d.tipo==='outros'?' selected':'')+'>Outros</option></select></div><div class="form-group"><label>Status</label><select id="os-status" required><option value="">Selecione</option><option value="aguardando_aprovacao"'+(d.status==='aguardando_aprovacao'?' selected':'')+'>Aguardando</option><option value="em_andamento"'+(d.status==='em_andamento'?' selected':'')+'>Em Andamento</option><option value="aguardando_peca"'+(d.status==='aguardando_peca'?' selected':'')+'>Aguardando Peca</option><option value="concluido"'+(d.status==='concluido'?' selected':'')+'>Concluido</option><option value="entregue"'+(d.status==='entregue'?' selected':'')+'>Entregue</option><option value="cancelado"'+(d.status==='cancelado'?' selected':'')+'>Cancelado</option></select></div></div><div class="form-group"><label>Defeito</label><textarea id="os-defeito" rows="2">'+(d.defeito||'')+'</textarea></div><div class="form-row"><div class="form-group"><label>Bateria</label><input type="text" id="os-bateria" value="'+(d.bateria||'')+'"></div><div class="form-group"><label>Tecnico</label><input type="text" id="os-tecnico" value="'+(d.tecnico||'')+'"></div></div><h3 style="margin:12px 0 6px;font-size:11px;color:var(--text-muted);text-transform:uppercase">Testes</h3><div id="checklist-os" class="checklist-grid"><div class="checklist-item" data-check="tela"><div class="check"></div>Tela</div><div class="checklist-item" data-check="toque"><div class="check"></div>Touch</div><div class="checklist-item" data-check="wifi"><div class="check"></div>Wi-Fi</div><div class="checklist-item" data-check="bluetooth"><div class="check"></div>BT</div><div class="checklist-item" data-check="cameras"><div class="check"></div>Camera</div><div class="checklist-item" data-check="audio"><div class="check"></div>Audio</div><div class="checklist-item" data-check="botoes"><div class="check"></div>Botes</div><div class="checklist-item" data-check="faceid"><div class="check"></div>Face ID</div><div class="checklist-item" data-check="carregamento"><div class="check"></div>Carga</div><div class="checklist-item" data-check="sensor"><div class="check"></div>Sensores</div></div><h3 style="margin:12px 0 6px;font-size:11px;color:var(--text-muted);text-transform:uppercase">Valores</h3><div class="form-row"><div class="form-group"><label>Orcamento</label><input type="number" id="os-orcado" step="0.01" min="0" value="'+(d.orcado||'')+'"></div><div class="form-group"><label>Valor Final</label><input type="number" id="os-valor" step="0.01" min="0" value="'+(d.valor||'')+'"></div></div><div class="form-row"><div class="form-group"><label>Pagamento</label><select id="os-pagamento"><option value="">Selecione</option><option value="dinheiro"'+(d.pagamento==='dinheiro'?' selected':'')+'>Dinheiro</option><option value="pix"'+(d.pagamento==='pix'?' selected':'')+'>PIX</option><option value="cartao"'+(d.pagamento==='cartao'?' selected':'')+'>Cartao</option><option value="credito"'+(d.pagamento==='credito'?' selected':'')+'>Credito</option><option value="debito"'+(d.pagamento==='debito'?' selected':'')+'>Debito</option></select></div><div class="form-group"><label>Acessorios</label><input type="text" id="os-acessorios" value="'+(d.acessorios||'')+'"></div></div><h3 style="margin:12px 0 6px;font-size:11px;color:var(--text-muted);text-transform:uppercase">Datas</h3><div class="form-row"><div class="form-group"><label>Entrada</label><input type="date" id="os-data-entrada" value="'+(d.dataEntrada||'')+'"></div><div class="form-group"><label>Previsao</label><input type="date" id="os-previsao" value="'+(d.previsao||'')+'"></div><div class="form-group"><label>Saida</label><input type="date" id="os-data-saida" value="'+(d.dataSaida||'')+'"></div><div class="form-group"><label>Garantia</label><input type="date" id="os-data-garantia" value="'+(d.dataGarantia||'')+'"></div></div><div class="form-group"><label>Observacoes Garantia</label><input type="text" id="os-obs-garantia" value="'+(d.obsGarantia||'')+'"></div><div class="form-group"><label>Observacoes</label><textarea id="os-obs" rows="2">'+(d.observacoes||'')+'</textarea></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div></form></div>'
+    modal.innerHTML=html
+    document.body.appendChild(modal)
+    modal.addEventListener('click',function(e){if(e.target===this)this.remove()})
+    document.querySelectorAll('#checklist-os .checklist-item').forEach(function(i){i.addEventListener('click',function(){this.classList.toggle('checked')})})
+    // Marca itens ja selecionados
+    if(d.testados){
+      var sel=d.testados.split(',').filter(Boolean)
+      document.querySelectorAll('#checklist-os .checklist-item').forEach(function(i){if(sel.includes(i.dataset.check))i.classList.add('checked')})
+    }
+    window._clienteOSId=d.clienteId||null
+    if(!d.id){
+      var hoje=new Date().toISOString().split('T')[0]
+      document.getElementById('os-data-entrada').value=hoje
+      var g=new Date();g.setDate(g.getDate()+90)
+      document.getElementById('os-data-garantia').value=g.toISOString().split('T')[0]
+    }
+  }
+
+function salvarOS(e){
+  e.preventDefault()
+  const id=document.getElementById('os-id').value
+  const testados=[];document.querySelectorAll('#checklist-os .checklist-item.checked').forEach(i=>testados.push(i.dataset.check))
+  const o={id:id?parseInt(id):Date.now(),numero:id?document.getElementById('os-num').value:proxOS(),clienteId:window._clienteOSId,marca:document.getElementById('os-marca').value,modelo:document.getElementById('os-modelo').value,imei:document.getElementById('os-imei').value,tipo:document.getElementById('os-tipo').value,status:document.getElementById('os-status').value,defeito:document.getElementById('os-defeito').value,bateria:document.getElementById('os-bateria').value,testados:testados.join(','),acessorios:document.getElementById('os-acessorios').value,orcado:document.getElementById('os-orcado').value,valor:document.getElementById('os-valor').value,pagamento:document.getElementById('os-pagamento').value,dataGarantia:document.getElementById('os-data-garantia').value,obsGarantia:document.getElementById('os-obs-garantia').value,dataEntrada:document.getElementById('os-data-entrada').value,previsao:document.getElementById('os-previsao').value,dataSaida:document.getElementById('os-data-saida').value,tecnico:document.getElementById('os-tecnico').value,observacoes:document.getElementById('os-obs').value}
+  if(id)updOrdem(parseInt(id),o);else addOrdem(o)
+  document.getElementById('modal-os')?.remove()
+  renderOrdens()
+  msg('msg-os',id?'OS atualizada!':'OS criada!','success')
+}
+
+function editarOrdem(id){
+  const o=getOrdens().find(x=>x.id===id);if(!o)return
+  const c=getClientes().find(x=>x.id===o.clienteId)
+  o._clienteNome=c?c.nome:''
+  abrirModalOS(o)
+}
+
+function excluirOrdem(id){if(!confirm('Excluir OS?'))return;db.ordens=db.ordens.filter(x=>x.id!==id);salvarDB();renderOrdens();msg('msg-os','Excluida!','success')}
+
+// VENDAS CELULAR
+function renderVendasCelular(){
+  const f=document.getElementById('busca-venda').value.toLowerCase()
+  let vs=getVendasCelular()
+  const clientes=getClientes()
+  if(f)vs=vs.filter(v=>{const c=clientes.find(x=>x.id===v.clienteId);return v.numero.toLowerCase().includes(f)||(c&&c.nome.toLowerCase().includes(f))||v.marca.toLowerCase().includes(f)||v.modelo.toLowerCase().includes(f)||(v.imei||'').includes(f)})
+  vs.sort((a,b)=>new Date(b.dataVenda)-new Date(a.dataVenda))
+  document.getElementById('tabela-vendas-celular').innerHTML=vs.length?vs.map(v=>{const c=clientes.find(x=>x.id===v.clienteId);return '<tr><td style="font-weight:600;color:var(--blue)">'+v.numero+'</td><td>'+fmtData(v.dataVenda)+'</td><td>'+(c?c.nome:'N/A')+'</td><td>'+v.marca+' '+v.modelo+'</td><td style="font-size:11px;font-family:monospace">'+(v.imei||'-')+'</td><td style="font-weight:600">R$ '+(parseFloat(v.valor||0).toFixed(2))+'</td><td>'+pagLabel(v.pagamento)+'</td><td><div class="btn-group"><button class="btn btn-sm btn-secondary" onclick="gerarTermoVendaCelular('+v.id+')">Termo</button><button class="btn btn-sm btn-danger" onclick="excluirVendaCelular('+v.id+')">Del</button></div></td></tr>'}).join(''):'<tr><td colspan="8" class="empty-state">Nenhuma venda</td></tr>'
+  const now=new Date(),mes=String(now.getMonth()+1).padStart(2,'0'),ano=now.getFullYear()
+  const totalMes=vs.filter(v=>v.dataVenda?.substring(5,7)===mes&&v.dataVenda?.substring(0,4)==String(ano)).reduce((s,v)=>s+parseFloat(v.valor||0),0)
+  document.getElementById('total-vendas-celular').textContent='R$ '+totalMes.toFixed(2).replace('.',',')
+}
+
+function abrirModalVendaCelular(dados){
+  const d=dados||{}
+  const clientes=getClientes()
+  const modal=document.createElement('div');modal.className='modal-overlay active';modal.id='modal-venda-celular'
+  modal.innerHTML='<div class="modal modal-lg"><div class="modal-header"><h2 class="modal-title">'+(d.id?'Editar Venda':'Nova Venda de Celular')+'</h2><button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">&times;</button></div><form onsubmit="salvarVendaCelular(event)"><input type="hidden" id="vc-id" value="'+(d.id||'')+'"><input type="hidden" id="vc-num" value="'+(d.numero||'')+'"><div class="form-row"><div class="form-group"><label>Cliente</label><div class="autocomplete-wrapper"><input type="text" id="vc-cliente" required value="'+(d._clienteNome||'')+'" oninput="buscarClientesAutoVenda(this.value)"><div class="autocomplete-list" id="auto-clientes-venda"></div></div></div></div><h3 style="margin:12px 0 6px;font-size:11px;color:var(--text-muted);text-transform:uppercase">Aparelho</h3><div class="form-row"><div class="form-group"><label>Marca</label><input type="text" id="vc-marca" required value="'+(d.marca||'')+'"></div><div class="form-group"><label>Modelo</label><input type="text" id="vc-modelo" required value="'+(d.modelo||'')+'"></div><div class="form-group"><label>IMEI</label><input type="text" id="vc-imei" value="'+(d.imei||'')+'"></div></div><div class="form-row"><div class="form-group"><label>Capacidade</label><select id="vc-capacidade"><option value="">Selecione</option><option value="32GB"'+(d.capacidade==='32GB'?' selected':'')+'>32GB</option><option value="64GB"'+(d.capacidade==='64GB'?' selected':'')+'>64GB</option><option value="128GB"'+(d.capacidade==='128GB'?' selected':'')+'>128GB</option><option value="256GB"'+(d.capacidade==='256GB'?' selected':'')+'>256GB</option><option value="512GB"'+(d.capacidade==='512GB'?' selected':'')+'>512GB</option><option value="1TB"'+(d.capacidade==='1TB'?' selected':'')+'>1TB</option></select></div><div class="form-group"><label>Cor</label><input type="text" id="vc-cor" value="'+(d.cor||'')+'"></div></div><h3 style="margin:12px 0 6px;font-size:11px;color:var(--text-muted);text-transform:uppercase">Estado de Conservacao</h3><div class="form-row"><div class="form-group"><label>Estado</label><select id="vc-estado" required><option value="">Selecione</option><option value="novo"'+(d.estado==='novo'?' selected':'')+'>Novo (sem uso)</option><option value="semi_novo"'+(d.estado==='semi_novo'?' selected':'')+'>Semi-novo (pouco uso)</option><option value="usado"'+(d.estado==='usado'?' selected':'')+'>Usado (funcionando)</option><option value="revisado"'+(d.estado==='revisado'?' selected':'')+'>Revisado/Recuperado</option></select></div></div><div class="form-group"><label>Descricao do Estado</label><textarea id="vc-desc-estado" placeholder="Descreva condicoes, riscos, avarias...">'+(d.descEstado||'')+'</textarea></div><h3 style="margin:12px 0 6px;font-size:11px;color:var(--text-muted);text-transform:uppercase">Venda</h3><div class="form-row"><div class="form-group"><label>Valor (R$)</label><input type="number" id="vc-valor" step="0.01" min="0" required value="'+(d.valor||'')+'"></div><div class="form-group"><label>Pagamento</label><select id="vc-pagamento" required><option value="">Selecione</option><option value="dinheiro"'+(d.pagamento==='dinheiro'?' selected':'')+'>Dinheiro</option><option value="pix"'+(d.pagamento==='pix'?' selected':'')+'>PIX</option><option value="cartao"'+(d.pagamento==='cartao'?' selected':'')+'>Cartao</option><option value="credito"'+(d.pagamento==='credito'?' selected':'')+'>Credito</option><option value="debito"'+(d.pagamento==='debito'?' selected':'')+'>Debito</option></select></div></div><div class="form-row"><div class="form-group"><label>Data da Venda</label><input type="date" id="vc-data" required value="'+(d.dataVenda||'')+'"></div><div class="form-group"><label>Possui Carregador?</label><select id="vc-carregador"><option value="sim"'+(d.carregador==='sim'?' selected':'')+'>Sim</option><option value="nao"'+(d.carregador==='nao'?' selected':'')+'>Nao</option></select></div></div><div class="form-group"><label>Observacoes</label><textarea id="vc-obs" placeholder="Garantia, informacoes adicionais...">'+(d.observacoes||'')+'</textarea></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div></form></div>'
+  document.body.appendChild(modal)
+  modal.addEventListener('click',function(e){if(e.target===this)this.remove()})
+  if(!d.id){
+    document.getElementById('vc-data').value=new Date().toISOString().split('T')[0]
+  }
+  window._clienteVendaId=d.clienteId||null
+}
+
+function salvarVendaCelular(e){
+  e.preventDefault()
+  const id=document.getElementById('vc-id').value
+  const v={id:id?parseInt(id):Date.now(),numero:id?document.getElementById('vc-num').value:proxVenda(),clienteId:window._clienteVendaId,marca:document.getElementById('vc-marca').value,modelo:document.getElementById('vc-modelo').value,imei:document.getElementById('vc-imei').value,capacidade:document.getElementById('vc-capacidade').value,cor:document.getElementById('vc-cor').value,estado:document.getElementById('vc-estado').value,descEstado:document.getElementById('vc-desc-estado').value,valor:document.getElementById('vc-valor').value,pagamento:document.getElementById('vc-pagamento').value,dataVenda:document.getElementById('vc-data').value,carregador:document.getElementById('vc-carregador').value,observacoes:document.getElementById('vc-obs').value}
+  if(id)updVendaCelular(parseInt(id),v);else addVendaCelular(v)
+  document.getElementById('modal-venda-celular')?.remove()
+  renderVendasCelular()
+  msg('msg-venda-celular',id?'Venda atualizada!':'Venda registrada!','success')
+}
+
+function excluirVendaCelular(id){if(!confirm('Excluir venda?'))return;delVendaCelular(id);renderVendasCelular();msg('msg-venda-celular','Excluida!','success')}
+
+function buscarClientesAutoVenda(termo){
+  const lista=document.getElementById('auto-clientes-venda')
+  if(!termo||termo.length<2){lista?.classList.remove('active');return}
+  const f=getClientes().filter(c=>c.nome.toLowerCase().includes(termo.toLowerCase()))
+  if(!f.length){lista?.classList.remove('active');return}
+  lista.innerHTML=f.map(c=>'<div class="autocomplete-item" onclick="selClienteAutoVenda('+c.id+',\''+c.nome.replace(/'/g,"\\'")+'\')">'+c.nome+' - '+c.telefone+'</div>').join('');lista.classList.add('active')
+}
+function selClienteAutoVenda(id,nome){window._clienteVendaId=id;document.getElementById('vc-cliente').value=nome;document.getElementById('auto-clientes-venda').classList.remove('active')}
+
+function gerarTermoVendaCelular(id){
+  const v=getVendasCelular().find(x=>x.id===id);if(!v)return
+  const c=getClientes().find(x=>x.id===v.clienteId)
+  const p=JSON.parse(localStorage.getItem('tc-prestador')||'{}')
+  if(!c){alert('Cliente nao encontrado');return}
+  const hoje=new Date().toLocaleDateString('pt-BR')
+  const estadoLabel={'novo':'Novo (sem uso)','semi_novo':'Semi-novo','usado':'Usado','revisado':'Revisado/Recuperado'}
+  document.getElementById('termo-venda-content').innerHTML='<h1>TERMO DE COMPRA E VENDA DE APARELHO CELULAR</h1>'
+    +'<h2>1. DADOS DAS PARTES</h2><div class="dados">'
+    +'<div class="dados-row"><span class="dados-label">Vendedor/Prestador:</span><span class="dados-value">'+(p.nome||'_________________________')+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">CPF/CNPJ:</span><span class="dados-value">'+(p.documento||'_________________________')+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Telefone:</span><span class="dados-value">'+(p.telefone||'_________________________')+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Comprador:</span><span class="dados-value">'+c.nome+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">CPF:</span><span class="dados-value">'+c.cpf+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Telefone:</span><span class="dados-value">'+c.telefone+'</span></div></div>'
+    +'<h2>2. DADOS DO APARELHO</h2><div class="dados">'
+    +'<div class="dados-row"><span class="dados-label">Marca/Modelo:</span><span class="dados-value">'+v.marca+' '+v.modelo+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">IMEI:</span><span class="dados-value">'+(v.imei||'Nao informado')+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Capacidade:</span><span class="dados-value">'+(v.capacidade||'Nao informada')+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Cor:</span><span class="dados-value">'+(v.cor||'Nao informada')+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Estado:</span><span class="dados-value">'+(estadoLabel[v.estado]||'-')+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Carregador:</span><span class="dados-value">'+(v.carregador==='sim'?'Sim':'Nao')+'</span></div></div>'
+    +'<div class="destaque-box"><p><strong>Descricao do Estado:</strong> '+(v.descEstado||'Sem descricao adicional')+'</p></div>'
+    +'<h2>3. CONDICOES DA VENDA</h2><div class="valor-total">VALOR TOTAL: R$ '+(parseFloat(v.valor||0).toFixed(2))+'</div>'
+    +'<p style="font-size:11px;text-align:center;margin-bottom:14px">Forma de pagamento: <strong>'+pagLabel(v.pagamento)+'</strong> | Data: <strong>'+fmtData(v.dataVenda)+'</strong></p>'
+    +'<h2>4. TERMOS E CONDICOES</h2>'
+    +'<p><strong>4.1. TESTE DO APARELHO:</strong> O comprador declara ter testado e/ou tenido oportunidade de testar o aparelho antes da compra, verificando todas as funcoes: tela, toque, cameras, Wi-Fi, Bluetooth, audio, carregamento, botoes e sensores. O aparelho foi vendido no estado em que se encontra.</p>'
+    +'<p><strong>4.2. ESTADO DE CONSERVACAO:</strong> O comprador declara estar ciente do estado de conservacao do aparelho ('+(estadoLabel[v.estado]||'-')+') e aceita o equipamento nesta condicao, sem reclamacoes futuras sobre aspectos ja visiveis ou testados.</p>'
+    +'<p><strong>4.3. IMEI E BLOQUEIOS:</strong> O vendedor declara que o IMEI ('+(v.imei||'informado')+') esta OK no momento da venda. O comprador fica ciente que e responsabilidade do mesmo a verificacao de bloqueios (_operatoradoras, financeiro, iCloud/Google) junto as operados/Apple/Google antes da compra. O vendedor nao se responsabiliza por bloqueios futuros.</p>'
+    +'<p><strong>4.4. EXCLUSAO DE GARANTIA:</strong> Esta venda e realizada no estado em que se encontra, sem garantias expressas ou tacitas alem da garantia legal de funcionamento conforme o Codigo de Defesa do Consumidor (90 dias para produtos seminovos/usados), quando aplicavel. Qualquer garantia adicional sera descriminada no campo de observacoes.</p>'
+    +'<p><strong>4.5. DIREITO DE ARREPENDIMENTO:</strong> conforme Art. 49 do CDC, o consumidor tem ate 7 dias para devolver o produto caso identifica-lo como diferente do anunciado. Produto com avaria posterior ou usado incorretamente nao sera aceito.</p>'
+    +'<p><strong>4.6. DADOS E CONTA:</strong> O comprador deve remover conta iCloud/Google antes de utilizar. O vendedor nao se responsabiliza por bloqueios decorrentes de contas google/apple atreladas ao dispositivo.</p>'
+    +'<p><strong>4.7. RESPONSABILIDADE:</strong> O vendedor nao se responsabiliza por danos decorrentes do uso inadequado, quedas, liquidos, adaptacoes de software ou modificacoes feitas pelo comprador apos a entrega.</p>'
+    +'<h2>5. OBSERVACOES</h2>'
+    +'<p style="background:#f8f8f8;padding:10px;border-radius:6px;min-height:40px">'+(v.observacoes||'Sem observacoes adicionais')+'</p>'
+    +'<h2>6. ASSINATURAS</h2>'
+    +'<div class="assinaturas"><div class="assinatura-box"><div class="linha-assinatura"></div><p>Comprador</p></div><div class="assinatura-box"><div class="linha-assinatura"></div><p>Vendedor</p></div></div>'
+    +'<p style="text-align:center;margin-top:14px">'+hoje+' - '+(p.endereco?p.endereco.split(',')[0]:'_________________')+'</p>'
+    +'<div class="termo-footer">'+(p.nome||'TechCELL')+' - Documento gerado pelo sistema</div>'
+    +'<div style="margin-top:20px;text-align:center"><button class="btn btn-primary btn-imprimir" onclick="window.print()">Imprimir</button><button class="btn btn-secondary btn-imprimir" onclick="document.getElementById(\'termo-venda-container\').classList.remove(\'active\')" style="margin-left:8px">Fechar</button></div>'
+  document.getElementById('termo-venda-container').classList.add('active')
+}
+
+// AUTOCOMPLETE
+function buscarClientesAuto(termo){
+  const lista=document.getElementById('auto-clientes')
+  if(!termo||termo.length<2){lista?.classList.remove('active');return}
+  const f=getClientes().filter(c=>c.nome.toLowerCase().includes(termo.toLowerCase()))
+  if(!f.length){lista?.classList.remove('active');return}
+  lista.innerHTML=f.map(c=>'<div class="autocomplete-item" onclick="selClienteAuto('+c.id+',\''+c.nome.replace(/'/g,"\\'")+'\')">'+c.nome+' - '+c.telefone+'</div>').join('');lista.classList.add('active')
+}
+function selClienteAuto(id,nome){window._clienteOSId=id;document.getElementById('os-cliente').value=nome;document.getElementById('auto-clientes').classList.remove('active')}
+
+// TERMO
+function gerarTermo(id){
+  const o=getOrdens().find(x=>x.id===id);if(!o)return
+  const c=getClientes().find(x=>x.id===o.clienteId)
+  const p=JSON.parse(localStorage.getItem('tc-prestador')||'{}')
+  if(!c){alert('Cliente nao encontrado');return}
+  if(!p.nome&&!confirm('Dados do prestador nao configurados. Deseja continuar?')){showSection('config');return}
+  const de=fmtData(o.dataEntrada),dp=fmtData(o.previsao),hoje=new Date().toLocaleDateString('pt-BR')
+  const vf=parseFloat(o.valor||0).toFixed(2),vo=parseFloat(o.orcado||0).toFixed(2)
+  const test=(o.testados||'').split(',').filter(Boolean).map(t=>itemLabel(t)).join(', ')||'N/I'
+  document.getElementById('termo-content').innerHTML='<h1>TERMO DE AUTORIZACAO DE SERVICO E RESPONSABILIDADE</h1>'
+    +'<h2>1. IDENTIFICACAO</h2><div class="dados">'
+    +'<div class="dados-row"><span class="dados-label">Prestador:</span><span class="dados-value">'+(p.nome||'_________________________')+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">CPF/CNPJ:</span><span class="dados-value">'+(p.documento||'_________________________')+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Cliente:</span><span class="dados-value">'+c.nome+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">CPF:</span><span class="dados-value">'+c.cpf+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Dispositivo:</span><span class="dados-value">'+o.marca+' '+o.modelo+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">IMEI:</span><span class="dados-value">'+(o.imei||'N/I')+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">OS:</span><span class="dados-value">'+o.numero+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Entrada:</span><span class="dados-value">'+de+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Previsao:</span><span class="dados-value">'+dp+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Defeito:</span><span class="dados-value">'+o.defeito+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Testado:</span><span class="dados-value">'+test+'</span></div>'
+    +'<div class="dados-row"><span class="dados-label">Acessorios:</span><span class="dados-value">'+(o.acessorios||'Nenhum')+'</span></div></div>'
+    +'<div class="valor-destaque"><p style="margin:0;font-size:12px;color:#666">Orcado: <strong>R$ '+vo+'</strong> | Final: <strong class="valor-num">R$ '+vf+'</strong></p><p style="margin:4px 0 0;font-size:11px;color:#666">Pagamento: '+(o.pagamento?pagLabel(o.pagamento):'A combinar')+'</p></div>'
+    +'<h2>2. AUTORIZACAO</h2><p>Eu, <strong>'+c.nome+'</strong>, CPF <strong>'+c.cpf+'</strong>, autorizo a realizacao do servico descrito, ciente dos riscos e condicoes abaixo.</p>'
+    +'<h2>3. CONDICOES</h2><p><strong>3.1.</strong> Troca de tela pode comprometer Touch ID, Face ID, brilho automatico, sensores. Nao nos responsabilizamos por danos preexistentes.</p><p><strong>3.2.</strong> Dispositivos com oxidacao/curto/danos liquido podem apresentar falhas adicionais durante reparo.</p><p><strong>3.3.</strong> Garantia de 90 dias sobre servico e pecas fornecidas, nao cobrindo novos danos, quedas ou liquidos.</p><p><strong>3.4.</strong> Orcamento aprovado e vinculante. Servicos adicionais mediante nova autorizacao.</p><p><strong>3.5.</strong> Desistencia apos inicio pode gerar taxa de desmontagem.</p><p><strong>3.6.</strong> Dispositivos nao retirados em 90 dias poderao ser descartados (Art. 1.263 CC).</p>'
+    +'<h2>4. ASSINATURAS</h2><div class="assinaturas"><div class="assinatura-box"><div class="linha-assinatura"></div><p>Cliente</p></div><div class="assinatura-box"><div class="linha-assinatura"></div><p>'+(p.nome||'Prestador')+'</p></div></div>'
+    +'<p style="text-align:center;margin-top:14px">'+hoje+' - '+(p.endereco?p.endereco.split(',')[0]:'_________________')+'</p>'
+    +'<div class="termo-footer">'+(p.nome||'TechCELL')+' - Documento gerado pelo sistema</div>'
+    +'<div style="margin-top:20px;text-align:center"><button class="btn btn-primary btn-imprimir" onclick="window.print()">Imprimir</button><button class="btn btn-secondary btn-imprimir" onclick="document.getElementById(\'termo-container\').classList.remove(\'active\')" style="margin-left:8px">Fechar</button></div>'
+  document.getElementById('termo-container').classList.add('active')
+}
+
+// PRESTADOR
+function salvarPrestador(e){
+  e.preventDefault()
+  const p={nome:document.getElementById('pref-nome').value,documento:document.getElementById('pref-doc').value,telefone:document.getElementById('pref-tel').value,email:document.getElementById('pref-email').value,endereco:document.getElementById('pref-end').value}
+  localStorage.setItem('tc-prestador',JSON.stringify(p))
+  db.prestador = p
+  salvarDB()
+  document.getElementById('pref-status').textContent='Salvo em '+new Date().toLocaleTimeString('pt-BR')
+  document.getElementById('pref-status').style.color='var(--success)'
+}
+;(function(){
+  const p=JSON.parse(localStorage.getItem('tc-prestador')||'{}')
+  if(p.nome){
+    document.getElementById('pref-nome').value=p.nome||''
+    document.getElementById('pref-doc').value=p.documento||''
+    document.getElementById('pref-tel').value=p.telefone||''
+    document.getElementById('pref-email').value=p.email||''
+    document.getElementById('pref-end').value=p.endereco||''
+    document.getElementById('pref-status').textContent='Salvo'
+    document.getElementById('pref-status').style.color='var(--success)'
+  }
+})()
+
+// FINANCEIRO
+function renderFinanceiro(){
+  const ordens=getOrdens().filter(o=>o.status==='concluido'||o.status==='entregue')
+  const clientes=getClientes()
+  const mes=document.getElementById('fin-mes').value,ano=document.getElementById('fin-ano').value
+  let f=ordens
+  if(mes)f=f.filter(o=>o.dataSaida?.substring(5,7)===mes)
+  if(ano)f=f.filter(o=>o.dataSaida?.substring(0,4)===ano)
+  f.sort((a,b)=>new Date(b.dataSaida)-new Date(a.dataSaida))
+  const tb=document.getElementById('tabela-financeiro')
+  tb.innerHTML=f.length?f.map(o=>{const c=clientes.find(x=>x.id===o.clienteId);return '<tr><td style="font-weight:600;color:var(--blue)">'+o.numero+'</td><td>'+(c?c.nome:'N/A')+'</td><td>'+servLabel(o.tipo)+'</td><td>'+fmtData(o.dataSaida)+'</td><td>'+pagLabel(o.pagamento)+'</td><td style="font-weight:600">R$ '+(parseFloat(o.valor||0).toFixed(2))+'</td></tr>'}):'<tr><td colspan="6" class="empty-state">Nenhuma receita</td></tr>'
+  const total=f.reduce((s,o)=>s+parseFloat(o.valor||0),0)
+  document.getElementById('total-receitas').textContent='R$ '+total.toFixed(2).replace('.',',')
+  // Despesas
+  renderDespesas()
+  const despesas=getDespesas()
+  const df=despesas.filter(d=>{if(mes&&d.data?.substring(5,7)!==mes)return false;if(ano&&d.data?.substring(0,4)!==ano)return false;return true})
+  const td=df.reduce((s,d)=>s+parseFloat(d.valor||0),0)
+  const lucro=total-td;const marg=total>0?lucro/total*100:0
+  document.getElementById('res-receita').textContent='R$ '+total.toFixed(2).replace('.',',')
+  document.getElementById('res-despesa').textContent='R$ '+td.toFixed(2).replace('.',',')
+  document.getElementById('res-lucro').textContent='R$ '+lucro.toFixed(2).replace('.',',')
+  document.getElementById('res-lucro').style.color=lucro>=0?'var(--blue)':'var(--danger)'
+  document.getElementById('res-margem').textContent=marg.toFixed(1)+'%'
+  document.getElementById('res-margem').style.color=marg>=0?'var(--blue)':'var(--danger)'
+  document.getElementById('total-despesas').textContent='R$ '+td.toFixed(2).replace('.',',')
+}
+function renderDespesas(){
+  const ds=getDespesas().sort((a,b)=>new Date(b.data)-new Date(a.data))
+  document.getElementById('tabela-despesas').innerHTML=ds.length?ds.map(d=>'<tr><td>'+fmtData(d.data)+'</td><td>'+d.descricao+'</td><td>'+catLabel(d.categoria)+'</td><td style="font-weight:600">R$ '+(parseFloat(d.valor||0).toFixed(2))+'</td><td><button class="btn btn-sm btn-danger" onclick="excluirDespesa('+d.id+')">Del</button></td></tr>').join(''):'<tr><td colspan="5" class="empty-state">Nenhuma despesa</td></tr>'
+}
+function abrirModalDespesa(){
+  const modal=document.createElement('div');modal.className='modal-overlay active'
+  modal.innerHTML='<div class="modal"><div class="modal-header"><h2 class="modal-title">Nova Despesa</h2><button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">&times;</button></div><form onsubmit="salvarDespesa(event)"><div class="form-row"><div class="form-group"><label>Data</label><input type="date" id="desp-data" required></div><div class="form-group"><label>Categoria</label><select id="desp-cat" required><option value="">Selecione</option><option value="aluguel">Aluguel</option><option value="energia">Energia</option><option value="agua">Agua</option><option value="internet">Internet</option><option value="pecas">Pecas</option><option value="ferramentas">Ferramentas</option><option value="marketing">Marketing</option><option value="salarios">Salarios</option><option value="impostos">Impostos</option><option value="outros">Outros</option></select></div><div class="form-group"><label>Valor</label><input type="number" id="desp-valor" step="0.01" min="0" required></div></div><div class="form-group"><label>Descricao</label><input type="text" id="desp-desc" required></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button><button type="submit" class="btn btn-primary">Salvar</button></div></form></div>'
+  document.body.appendChild(modal)
+  modal.addEventListener('click',function(e){if(e.target===this)this.remove()})
+  document.getElementById('desp-data').value=new Date().toISOString().split('T')[0]
+}
+function salvarDespesa(e){
+  e.preventDefault()
+  addDespesa({id:Date.now(),data:document.getElementById('desp-data').value,categoria:document.getElementById('desp-cat').value,valor:document.getElementById('desp-valor').value,descricao:document.getElementById('desp-desc').value})
+  document.querySelector('.modal-overlay:last-child')?.remove()
+  renderFinanceiro()
+  msg('msg-fin','Despesa salva!','success')
+}
+function excluirDespesa(id){if(!confirm('Excluir despesa?'))return;delDespesa(id);renderFinanceiro();msg('msg-fin','Excluida!','success')}
+
+// RELATORIOS
+function renderRelatorios(){
+  const ordens=getOrdens();const conc=getOrdens().filter(o=>o.status==='concluido'||o.status==='entregue')
+  const total=ordens.length,c=conc.length,a=ordens.filter(o=>o.status==='em_andamento'||o.status==='aguardando_aprovacao').length
+  const fat=c?conc.reduce((s,o)=>s+parseFloat(o.valor||0),0):0
+  const ticket=c?fat/c:0
+  document.getElementById('rel-resumo').innerHTML='<div class="relatorio-card"><div class="r-value">'+total+'</div><div class="r-label">Total</div></div><div class="relatorio-card"><div class="r-value">'+c+'</div><div class="r-label">Concluidas</div></div><div class="relatorio-card"><div class="r-value">'+a+'</div><div class="r-label">Andamento</div></div><div class="relatorio-card"><div class="r-value">R$ '+fat.toFixed(2).replace('.',',')+'</div><div class="r-label">Faturamento</div></div><div class="relatorio-card"><div class="r-value">R$ '+ticket.toFixed(2).replace('.',',')+'</div><div class="r-label">Ticket Medio</div></div>'
+  const tm={};conc.forEach(o=>{if(o.tecnico){if(!tm[o.tecnico])tm[o.tecnico]={c:0,a:0,f:0};tm[o.tecnico].c++;tm[o.tecnico].f+=parseFloat(o.valor||0)}})
+  ordens.filter(o=>o.status==='em_andamento').forEach(o=>{if(o.tecnico){if(!tm[o.tecnico])tm[o.tecnico]={c:0,a:0,f:0};tm[o.tecnico].a++}})
+  const tk=Object.keys(tm)
+  document.getElementById('rel-tecnicos').innerHTML=tk.length?tk.map(t=>'<tr><td>'+t+'</td><td>'+tm[t].c+'</td><td>'+tm[t].a+'</td><td>R$ '+tm[t].f.toFixed(2).replace('.',',')+'</td></tr>').join(''):'<tr><td colspan="4" class="empty-state">Sem dados</td></tr>'
+  const sm={};conc.forEach(o=>{if(!sm[o.tipo])sm[o.tipo]={q:0,f:0};sm[o.tipo].q++;sm[o.tipo].f+=parseFloat(o.valor||0)})
+  const sk=Object.keys(sm);const ts=sk.reduce((s,k)=>s+sm[k].q,0)
+  document.getElementById('rel-servicos').innerHTML=sk.length?sk.map(t=>'<tr><td>'+servLabel(t)+'</td><td>'+sm[t].q+'</td><td>R$ '+sm[t].f.toFixed(2).replace('.',',')+'</td><td>'+(ts?(sm[t].q/ts*100).toFixed(1):0)+'%</td></tr>').join(''):'<tr><td colspan="4" class="empty-state">Sem dados</td></tr>'
+}
+
+// DASHBOARD
+function renderDashboard(){
+  const ordens=getOrdens();const now=new Date();const cm=now.getMonth(),cy=now.getFullYear()
+  const abertas=ordens.filter(o=>o.status==='em_andamento'||o.status==='aguardando_aprovacao'||o.status==='aguardando_peca').length
+  const fechadas=ordens.filter(o=>o.status==='concluido'||o.status==='entregue').length
+  const aguardando=ordens.filter(o=>o.status==='aguardando_peca').length
+  const canceladas=ordens.filter(o=>o.status==='cancelado').length
+  const receita=ordens.filter(o=>{if(!o.dataSaida||!o.valor)return false;const d=new Date(o.dataSaida);return d.getMonth()===cm&&d.getFullYear()===cy}).reduce((s,o)=>s+parseFloat(o.valor),0)
+  const total=ordens.length
+  document.getElementById('dash-stats').innerHTML='<div class="stat-card"><div class="label">Total</div><div class="value">'+total+'</div></div><div class="stat-card"><div class="label">Abertas</div><div class="value">'+abertas+'</div></div><div class="stat-card"><div class="label">Fechadas</div><div class="value">'+fechadas+'</div></div><div class="stat-card"><div class="label">Aguard. Peca</div><div class="value">'+aguardando+'</div><div class="sub">'+canceladas+' canceladas</div></div><div class="stat-card"><div class="label">Receita Mes</div><div class="value accent">R$ '+receita.toFixed(2).replace('.',',')+'</div></div>'
+const ultimas=[...ordens].sort((a,b)=>new Date(b.dataEntrada)-new Date(a.dataEntrada)).slice(0,5)
+   const clientes=getClientes()
+   document.getElementById('dashboard-table').innerHTML=ultimas.length?ultimas.map(o=>{
+     const c=clientes.find(x=>x.id===o.clienteId)
+     return '<tr><td style="font-weight:600;color:var(--blue)">'+o.numero+'</td><td>'+(c?c.nome:'N/A')+'</td><td>'+o.marca+' '+o.modelo+'</td><td><span class="status '+sttClass(o.status)+'"><span class="dot"></span>'+sttLabel(o.status)+'</span></td><td>R$ '+(parseFloat(o.valor||0).toFixed(2))+'</td></tr>'
+   }).join(''):'<tr><td colspan="5" class="empty-state">Nenhuma OS</td></tr>'
+  // Alertas
+  const hoje=new Date();const alertas=[]
+  ordens.forEach(o=>{
+    if(o.previsao&&(o.status==='aguardando_aprovacao'||o.status==='em_andamento')){
+      const p=new Date(o.previsao+'T12:00:00')
+      if(p<hoje){const d=Math.ceil((hoje-p)/(1000*60*60*24));alertas.push({t:'atraso',m:o.numero+' atrasada '+d+'d - Prev:'+fmtData(o.previsao)})}
+    }
+    if(o.status==='concluido'&&o.dataSaida){
+      const s=new Date(o.dataSaida+'T12:00:00');const d=Math.ceil((hoje-s)/(1000*60*60*24))
+      if(d>=7){const c=clientes.find(x=>x.id===o.clienteId);alertas.push({t:'pronta',m:o.numero+' pronta ha '+d+'d - '+(c?c.nome:'')})}
+    }
+    if(o.status==='aguardando_peca'&&o.dataEntrada){
+      const e=new Date(o.dataEntrada+'T12:00:00');const d=Math.ceil((hoje-e)/(1000*60*60*24))
+      if(d>=5)alertas.push({t:'peca',m:o.numero+' aguard. peca ha '+d+'d'})
+    }
+  })
+  const el=document.getElementById('alertas-container')
+  if(!alertas.length){el.innerHTML='<p class="text-muted" style="padding:8px 0">Nenhum alerta.</p>';return}
+  el.innerHTML=alertas.map(a=>'<div style="background:var(--surface-2);border-radius:8px;padding:10px 14px;margin-bottom:6px;border-left:3px solid '+(a.t==='atraso'?'var(--danger)':a.t==='pronta'?'var(--warning)':'var(--info)')+'"><span style="font-size:12px">'+a.m+'</span></div>').join('')
+}
+
+// BACKUP
+function exportarDados(){
+  const dados={clientes:getClientes(),ordens:getOrdens(),despesas:getDespesas(),contador:db.contador}
+  const blob=new Blob([JSON.stringify(dados,null,2)],{type:'application/json'})
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='techcell-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click()
+}
+function importarDados(e){
+  const file=e.target.files[0];if(!file)return
+  const reader=new FileReader()
+  reader.onload=function(ev){
+    try{
+      const d=JSON.parse(ev.target.result)
+      if(d.clientes){db.clientes=d.clientes;db.ordens=d.ordens||[];db.despesas=d.despesas||[];db.contador=d.contador||1;salvarDB();alert('Importado!');renderDashboard();renderClientes();renderOrdens();renderFinanceiro()}
+      else alert('Arquivo invalido.')
+    }catch(err){alert('Erro ao importar.')}
+  };reader.readAsText(file)
+  e.target.value=''
+}
+
+// HELPERS
+function sttClass(s){const c={'aguardando_aprovacao':'aguardando','em_andamento':'andamento','aguardando_peca':'aguardando','concluido':'concluido','entregue':'entregue','cancelado':'cancelado'};return c[s]||''}
+function sttLabel(s){const c={'aguardando_aprovacao':'Aguardando','em_andamento':'Andamento','aguardando_peca':'Aguard. Peca','concluido':'Concluido','entregue':'Entregue','cancelado':'Cancelado'};return c[s]||s}
+function servLabel(t){const c={'troca_tela':'Troca Tela','bateria':'Bateria','conector':'Conector','software':'Software','camera':'Camera','audio':'Audio','outros':'Outros'};return c[t]||t}
+function pagLabel(p){const c={'dinheiro':'Dinheiro','pix':'PIX','cartao':'Cartao','credito':'Credito','debito':'Debito'};return c[p]||'-'}
+function catLabel(c){const l={'aluguel':'Aluguel','energia':'Energia','agua':'Agua','internet':'Internet','pecas':'Pecas','ferramentas':'Ferramentas','marketing':'Marketing','salarios':'Salarios','impostos':'Impostos','outros':'Outros'};return l[c]||c}
+function itemLabel(i){const m={'tela':'Tela','toque':'Touch','wifi':'Wi-Fi','bluetooth':'BT','cameras':'Camera','audio':'Audio','botoes':'Botoes','faceid':'Face ID','carregamento':'Carga','sensor':'Sensores'};return m[i]||i}
+function fmtData(d){if(!d)return'-';const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('pt-BR')}
+
+// INIT
+;(function(){
+  const sel=document.getElementById('fin-ano');const cy=new Date().getFullYear()
+  for(let y=cy;y>=cy-5;y--){const o=document.createElement('option');o.value=y;o.textContent=y;sel.appendChild(o)}
+  initAuth()
+})()
+</script>
+</body>
+</html>

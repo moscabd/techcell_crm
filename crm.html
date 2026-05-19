@@ -732,9 +732,9 @@ function renderVendasCelular(){
   const f=document.getElementById('busca-venda').value.toLowerCase()
   let vs=getVendasCelular()
   const clientes=getClientes()
-  if(f)vs=vs.filter(v=>{const c=clientes.find(x=>x.id===v.clienteId);return v.numero.toLowerCase().includes(f)||(c&&c.nome.toLowerCase().includes(f))||v.marca.toLowerCase().includes(f)||v.modelo.toLowerCase().includes(f)||(v.imei||'').includes(f)})
+  if(f)vs=vs.filter(v=>{const c=clientes.find(x=>String(x.id)===String(v.clienteId));return v.numero.toLowerCase().includes(f)||(c&&c.nome.toLowerCase().includes(f))||v.marca.toLowerCase().includes(f)||v.modelo.toLowerCase().includes(f)||(v.imei||'').includes(f)})
   vs.sort((a,b)=>new Date(b.dataVenda)-new Date(a.dataVenda))
-  document.getElementById('tabela-vendas-celular').innerHTML=vs.length?vs.map(v=>{const c=clientes.find(x=>x.id===v.clienteId);return '<tr><td style="font-weight:600;color:var(--blue)">'+v.numero+'</td><td>'+fmtData(v.dataVenda)+'</td><td>'+(c?c.nome:'N/A')+'</td><td>'+v.marca+' '+v.modelo+'</td><td style="font-size:11px;font-family:monospace">'+(v.imei||'-')+'</td><td style="font-weight:600">R$ '+(parseFloat(v.valor||0).toFixed(2))+'</td><td>'+pagLabel(v.pagamento)+'</td><td><div class="btn-group"><button class="btn btn-sm btn-secondary" onclick="gerarTermoVendaCelular('+v.id+')">Termo</button><button class="btn btn-sm btn-danger" onclick="excluirVendaCelular('+v.id+')">Del</button></div></td></tr>'}).join(''):'<tr><td colspan="8" class="empty-state">Nenhuma venda</td></tr>'
+  document.getElementById('tabela-vendas-celular').innerHTML=vs.length?vs.map(v=>{const c=clientes.find(x=>String(x.id)===String(v.clienteId));return '<tr><td style="font-weight:600;color:var(--blue)">'+v.numero+'</td><td>'+fmtData(v.dataVenda)+'</td><td>'+(c?c.nome:'N/A')+'</td><td>'+v.marca+' '+v.modelo+'</td><td style="font-size:11px;font-family:monospace">'+(v.imei||'-')+'</td><td style="font-weight:600">R$ '+(parseFloat(v.valor||0).toFixed(2))+'</td><td>'+pagLabel(v.pagamento)+'</td><td><div class="btn-group"><button class="btn btn-sm btn-secondary" onclick="editarVendaCelular('+v.id+')">Editar</button><button class="btn btn-sm btn-secondary" onclick="gerarTermoVendaCelular('+v.id+')">Termo</button><button class="btn btn-sm btn-danger" onclick="excluirVendaCelular('+v.id+')">Del</button></div></td></tr>'}).join(''):'<tr><td colspan="8" class="empty-state">Nenhuma venda</td></tr>'
   const now=new Date(),mes=String(now.getMonth()+1).padStart(2,'0'),ano=now.getFullYear()
   const totalMes=vs.filter(v=>v.dataVenda?.substring(5,7)===mes&&v.dataVenda?.substring(0,4)==String(ano)).reduce((s,v)=>s+parseFloat(v.valor||0),0)
   document.getElementById('total-vendas-celular').textContent='R$ '+totalMes.toFixed(2).replace('.',',')
@@ -763,7 +763,14 @@ function salvarVendaCelular(e){
   msg('msg-venda-celular',id?'Venda atualizada!':'Venda registrada!','success')
 }
 
-function excluirVendaCelular(id){if(!confirm('Excluir venda?'))return;delVendaCelular(id);renderVendasCelular();msg('msg-venda-celular','Excluida!','success')}
+function editarVendaCelular(id){
+  const v=getVendasCelular().find(x=>String(x.id)===String(id));if(!v)return
+  const c=getClientes().find(x=>String(x.id)===String(v.clienteId))
+  v._clienteNome=c?c.nome:''
+  abrirModalVendaCelular(v)
+}
+
+function excluirVendaCelular(id){delVendaCelular(id)}
 
 function buscarClientesAutoVenda(termo){
   const lista=document.getElementById('auto-clientes-venda')
@@ -775,10 +782,9 @@ function buscarClientesAutoVenda(termo){
 function selClienteAutoVenda(id,nome){window._clienteVendaId=id;document.getElementById('vc-cliente').value=nome;document.getElementById('auto-clientes-venda').classList.remove('active')}
 
 function gerarTermoVendaCelular(id){
-  const v=getVendasCelular().find(x=>x.id===id);if(!v)return
-  const c=getClientes().find(x=>x.id===v.clienteId)
+  const v=getVendasCelular().find(x=>String(x.id)===String(id));if(!v)return
+  const c=getClientes().find(x=>String(x.id)===String(v.clienteId)) || { nome: 'Cliente Não Informado', cpf: '_________________________', telefone: '_________________________', email: '', endereco: '' }
   const p=JSON.parse(localStorage.getItem('tc-prestador')||'{}')
-  if(!c){alert('Cliente nao encontrado');return}
   const hoje=new Date().toLocaleDateString('pt-BR')
   const estadoLabel={'novo':'Novo (sem uso)','semi_novo':'Semi-novo','usado':'Usado','revisado':'Revisado/Recuperado'}
   document.getElementById('termo-venda-content').innerHTML='<h1>TERMO DE COMPRA E VENDA DE APARELHO CELULAR</h1>'

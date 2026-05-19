@@ -507,27 +507,41 @@ function proxOS(){return 'OS-'+String(db.contador).padStart(4,'0')}
 function proxVenda(){return 'VC-'+String(db.contador).padStart(4,'0')}
 function addCliente(c){db.clientes.push(c);salvarDB()}
 function updCliente(id,c){const i=db.clientes.findIndex(x=>x.id===id);if(i>-1){db.clientes[i]=c;salvarDB()}}
-function delCliente(id){
+async function delCliente(id){
   if(!confirm('Tem certeza que deseja excluir?'))return
-  db.clientes=db.clientes.filter(x=>x.id!==id)
-  // Remove do Supabase usando DELETE direto com Promise
-  _supa.from('clientes').delete().eq('id', id).then()
-  salvarDBLocal()
-  renderClientes()
-  alert('Cliente removido!')
+  try{
+    await _supa.from('clientes').delete().eq('id', id)
+    db.clientes=db.clientes.filter(x=>x.id!==id)
+    salvarDBLocal()
+    renderClientes()
+  }catch(e){
+    console.error('Erro:',e)
+    alert('Erro ao excluir. Tente novamente.')
+  }
 }
-function delDespesa(id){
+async function delDespesa(id){
   if(!confirm('Excluir despesa?'))return
-  db.despesas=db.despesas.filter(x=>x.id!==id)
-  _supa.from('despesas').delete().eq('id', id).then()
-  salvarDBLocal()
-  renderFinanceiro()
+  try{
+    await _supa.from('despesas').delete().eq('id', id)
+    db.despesas=db.despesas.filter(x=>x.id!==id)
+    salvarDBLocal()
+    renderFinanceiro()
+  }catch(e){
+    console.error('Erro:',e)
+    alert('Erro ao excluir')
+  }
 }
-function delVendaCelular(id){
-  db.vendasCelular=db.vendasCelular.filter(x=>x.id!==id)
-  _supa.from('vendas_celular').delete().eq('id', id).then(({error})=>{if(error)console.error('Erro delete venda:',error)}).catch(e=>console.error(e))
-  salvarDBLocal()
-  renderVendasCelular()
+async function delVendaCelular(id){
+  if(!confirm('Excluir venda?'))return
+  try{
+    await _supa.from('vendas_celular').delete().eq('id', id)
+    db.vendasCelular=db.vendasCelular.filter(x=>x.id!==id)
+    salvarDBLocal()
+    renderVendasCelular()
+  }catch(e){
+    console.error(e)
+    alert('Erro ao excluir')
+  }
 }
 
 function showSection(s){
@@ -671,7 +685,7 @@ function editarOrdem(id){
   abrirModalOS(o)
 }
 
-function excluirOrdem(id){if(!confirm('Excluir OS?'))return;db.ordens=db.ordens.filter(x=>x.id!==id);_supa.from('ordens').delete().eq('id', id).then(()=>{});salvarDBLocal();renderOrdens();msg('msg-os','Excluida!','success')}
+async function excluirOrdem(id){if(!confirm('Excluir OS?'))return;try{await _supa.from('ordens').delete().eq('id', id);db.ordens=db.ordens.filter(x=>x.id!==id);salvarDBLocal();renderOrdens();msg('msg-os','Excluida!','success')}catch(e){console.error(e);alert('Erro ao excluir OS')}}
 
 // VENDAS CELULAR
 function renderVendasCelular(){

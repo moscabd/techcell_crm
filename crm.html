@@ -510,6 +510,7 @@ function addCliente(c){db.clientes.push(c);salvarDB()}
 function updCliente(id,c){const i=db.clientes.findIndex(x=>x.id===id);if(i>-1){db.clientes[i]=c;salvarDB()}}
 function addOrdem(o){db.ordens.push(o);db.contador++;salvarDB()}
 function updOrdem(id,o){const i=db.ordens.findIndex(x=>x.id===id);if(i>-1){db.ordens[i]=o;salvarDB()}}
+function addDespesa(d){db.despesas.push(d);salvarDB()}
 function addVendaCelular(v){db.vendasCelular.push(v);db.contador++;salvarDB()}
 function updVendaCelular(id,v){const i=db.vendasCelular.findIndex(x=>x.id===id);if(i>-1){db.vendasCelular[i]=v;salvarDB()}}
 async function delCliente(id){

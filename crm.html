@@ -445,6 +445,13 @@ const ordemMap = {
 }
 const ordemRev = Object.fromEntries(Object.entries(ordemMap).map(([k,v])=>[v,k]))
 
+const vendaMap = {
+  clienteid: 'clienteId',
+  descestado: 'descEstado',
+  datavenda: 'dataVenda'
+}
+const vendaRev = Object.fromEntries(Object.entries(vendaMap).map(([k,v])=>[v,k]))
+
 function fixKeys(obj, map){
   if(Array.isArray(obj)) return obj.map(v=>fixKeys(v, map))
   if(!obj || typeof obj !== 'object') return obj
@@ -467,7 +474,7 @@ async function carregarDB(){
     db.clientes = clientesRes.data || []
     db.ordens = (ordensRes.data || []).map(o => fixKeys(o, ordemMap))
     db.despesas = despesasRes.data || []
-    db.vendasCelular = vendasCelularRes.data || []
+    db.vendasCelular = (vendasCelularRes.data || []).map(v => fixKeys(v, vendaMap))
     if(configRes.data){
       db.contador = configRes.data.contador || 1
       db.prestador = configRes.data.prestador || {}
@@ -484,7 +491,7 @@ async function salvarDB(){
       _supa.from('clientes').upsert(db.clientes, {onConflict: 'id'}),
       _supa.from('ordens').upsert(db.ordens.map(o => fixKeys(o, ordemRev)), {onConflict: 'id'}),
       _supa.from('despesas').upsert(db.despesas, {onConflict: 'id'}),
-      _supa.from('vendas_celular').upsert(db.vendasCelular, {onConflict: 'id'}),
+      _supa.from('vendas_celular').upsert(db.vendasCelular.map(v => fixKeys(v, vendaRev)), {onConflict: 'id'}),
       _supa.from('config').upsert({id: 1, contador: db.contador, prestador: db.prestador}, {onConflict: 'id'})
     ])
     console.log('Salvo no Supabase com sucesso')
@@ -952,7 +959,7 @@ const ultimas=[...ordens].sort((a,b)=>new Date(b.dataEntrada)-new Date(a.dataEnt
 
 // BACKUP
 function exportarDados(){
-  const dados={clientes:getClientes(),ordens:getOrdens(),despesas:getDespesas(),contador:db.contador}
+  const dados={clientes:getClientes(),ordens:getOrdens(),despesas:getDespesas(),vendasCelular:getVendasCelular(),contador:db.contador}
   const blob=new Blob([JSON.stringify(dados,null,2)],{type:'application/json'})
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='techcell-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click()
 }
@@ -962,7 +969,16 @@ function importarDados(e){
   reader.onload=function(ev){
     try{
       const d=JSON.parse(ev.target.result)
-      if(d.clientes){db.clientes=d.clientes;db.ordens=d.ordens||[];db.despesas=d.despesas||[];db.contador=d.contador||1;salvarDB();alert('Importado!');renderDashboard();renderClientes();renderOrdens();renderFinanceiro()}
+      if(d.clientes){
+        db.clientes=d.clientes;
+        db.ordens=d.ordens||[];
+        db.despesas=d.despesas||[];
+        db.vendasCelular=d.vendasCelular||[];
+        db.contador=d.contador||1;
+        salvarDB();
+        alert('Importado!');
+        renderDashboard();renderClientes();renderOrdens();renderFinanceiro();renderVendasCelular()
+      }
       else alert('Arquivo invalido.')
     }catch(err){alert('Erro ao importar.')}
   };reader.readAsText(file)

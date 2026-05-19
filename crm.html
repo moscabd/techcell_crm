@@ -508,14 +508,18 @@ function proxVenda(){return 'VC-'+String(db.contador).padStart(4,'0')}
 function addCliente(c){db.clientes.push(c);salvarDB()}
 function updCliente(id,c){const i=db.clientes.findIndex(x=>x.id===id);if(i>-1){db.clientes[i]=c;salvarDB()}}
 function delCliente(id){
+  if(!confirm('Tem certeza que deseja excluir?'))return
   db.clientes=db.clientes.filter(x=>x.id!==id)
-  _supa.from('clientes').delete().eq('id', id).then(({error})=>{if(error)console.error('Erro delete cliente:',error)}).catch(e=>console.error(e))
+  // Remove do Supabase usando DELETE direto com Promise
+  _supa.from('clientes').delete().eq('id', id).then()
   salvarDBLocal()
   renderClientes()
+  alert('Cliente removido!')
 }
 function delDespesa(id){
+  if(!confirm('Excluir despesa?'))return
   db.despesas=db.despesas.filter(x=>x.id!==id)
-  _supa.from('despesas').delete().eq('id', id).then(({error})=>{if(error)console.error('Erro delete despesa:',error)}).catch(e=>console.error(e))
+  _supa.from('despesas').delete().eq('id', id).then()
   salvarDBLocal()
   renderFinanceiro()
 }

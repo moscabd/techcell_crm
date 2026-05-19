@@ -471,6 +471,13 @@ async function carregarDB(){
       _supa.from('vendas_celular').select('*'),
       _supa.from('config').select('*').eq('id', 1).single()
     ])
+    
+    // Verificar se houve erros nas respostas do Supabase
+    if (clientesRes.error) throw new Error('Erro ao carregar Clientes: ' + clientesRes.error.message);
+    if (ordensRes.error) throw new Error('Erro ao carregar Ordens: ' + ordensRes.error.message);
+    if (despesasRes.error) throw new Error('Erro ao carregar Despesas: ' + despesasRes.error.message);
+    if (vendasCelularRes.error) throw new Error('Erro ao carregar Vendas de Celular: ' + vendasCelularRes.error.message);
+    
     db.clientes = clientesRes.data || []
     db.ordens = (ordensRes.data || []).map(o => fixKeys(o, ordemMap))
     db.despesas = despesasRes.data || []
@@ -481,22 +488,42 @@ async function carregarDB(){
     }
     renderDashboard(); renderClientes(); renderOrdens(); renderFinanceiro(); renderVendasCelular()
   }catch(e){
-    console.log('Erro ao carregar:', e)
+    console.error('Erro ao carregar banco de dados do Supabase:', e);
+    // Fallback para localStorage caso haja erro de rede ou de banco
+    for(const k of Object.keys(db)) {
+      const local = localStorage.getItem('tc-'+k);
+      if(local) {
+        try {
+          db[k] = JSON.parse(local);
+        } catch(err) {
+          console.error('Erro ao ler item do cache local:', err);
+        }
+      }
+    }
+    renderDashboard(); renderClientes(); renderOrdens(); renderFinanceiro(); renderVendasCelular();
   }
 }
 
 async function salvarDB(){
   try{
-    await Promise.all([
+    const [clientesRes, ordensRes, despesasRes, vendasCelularRes, configRes] = await Promise.all([
       _supa.from('clientes').upsert(db.clientes, {onConflict: 'id'}),
       _supa.from('ordens').upsert(db.ordens.map(o => fixKeys(o, ordemRev)), {onConflict: 'id'}),
       _supa.from('despesas').upsert(db.despesas, {onConflict: 'id'}),
       _supa.from('vendas_celular').upsert(db.vendasCelular.map(v => fixKeys(v, vendaRev)), {onConflict: 'id'}),
       _supa.from('config').upsert({id: 1, contador: db.contador, prestador: db.prestador}, {onConflict: 'id'})
     ])
+    
+    // Verificar se houve erros nos salvamentos do Supabase
+    if (clientesRes.error) throw new Error('Erro ao salvar Clientes: ' + clientesRes.error.message);
+    if (ordensRes.error) throw new Error('Erro ao salvar Ordens: ' + ordensRes.error.message);
+    if (despesasRes.error) throw new Error('Erro ao salvar Despesas: ' + despesasRes.error.message);
+    if (vendasCelularRes.error) throw new Error('Erro ao salvar Vendas de Celular: ' + vendasCelularRes.error.message);
+    
     console.log('Salvo no Supabase com sucesso')
   }catch(e){
-    console.log('Erro ao salvar:', e)
+    console.error('Erro ao salvar no Supabase:', e);
+    alert('Aviso: Os dados foram salvos localmente, mas não puderam ser sincronizados com o Supabase.\nDetalhe: ' + e.message);
   }
   for(const k of Object.keys(db))localStorage.setItem('tc-'+k,JSON.stringify(db[k]))
 }

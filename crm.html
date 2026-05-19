@@ -509,18 +509,21 @@ function addCliente(c){db.clientes.push(c);salvarDB()}
 function updCliente(id,c){const i=db.clientes.findIndex(x=>x.id===id);if(i>-1){db.clientes[i]=c;salvarDB()}}
 function delCliente(id){
   db.clientes=db.clientes.filter(x=>x.id!==id)
-  _supa.from('clientes').delete().eq('id', id).then(()=>{})
+  _supa.from('clientes').delete().eq('id', id).then(({error})=>{if(error)console.error('Erro delete cliente:',error)}).catch(e=>console.error(e))
   salvarDBLocal()
+  renderClientes()
 }
 function delDespesa(id){
   db.despesas=db.despesas.filter(x=>x.id!==id)
-  _supa.from('despesas').delete().eq('id', id).then(()=>{})
+  _supa.from('despesas').delete().eq('id', id).then(({error})=>{if(error)console.error('Erro delete despesa:',error)}).catch(e=>console.error(e))
   salvarDBLocal()
+  renderFinanceiro()
 }
 function delVendaCelular(id){
   db.vendasCelular=db.vendasCelular.filter(x=>x.id!==id)
-  _supa.from('vendas_celular').delete().eq('id', id).then(()=>{})
+  _supa.from('vendas_celular').delete().eq('id', id).then(({error})=>{if(error)console.error('Erro delete venda:',error)}).catch(e=>console.error(e))
   salvarDBLocal()
+  renderVendasCelular()
 }
 
 function showSection(s){
